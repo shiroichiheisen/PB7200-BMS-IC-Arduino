@@ -1,0 +1,74 @@
+#######################################
+# Syntax Coloring Map For PB7200P80
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+PB7200P80	KEYWORD1
+CellData	KEYWORD1
+ProtectionConfig	KEYWORD1
+PackStats	KEYWORD1
+PB7200_Mode	KEYWORD1
+PB7200_Interface	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+isConnected	KEYWORD2
+getDeviceID	KEYWORD2
+getCellVoltage	KEYWORD2
+getAllCellVoltages	KEYWORD2
+getCellData	KEYWORD2
+getTotalVoltage	KEYWORD2
+getMaxCellVoltage	KEYWORD2
+getMinCellVoltage	KEYWORD2
+getVoltageDelta	KEYWORD2
+getTemperature	KEYWORD2
+getAllTemperatures	KEYWORD2
+getMaxTemperature	KEYWORD2
+getMinTemperature	KEYWORD2
+getCurrent	KEYWORD2
+getPower	KEYWORD2
+getStatus	KEYWORD2
+getFaultStatus	KEYWORD2
+isOverVoltage	KEYWORD2
+isUnderVoltage	KEYWORD2
+isOverCurrent	KEYWORD2
+isOverTemperature	KEYWORD2
+isUnderTemperature	KEYWORD2
+clearFaults	KEYWORD2
+setBalancing	KEYWORD2
+setAutoBalancing	KEYWORD2
+isBalancing	KEYWORD2
+stopAllBalancing	KEYWORD2
+setProtectionConfig	KEYWORD2
+getProtectionConfig	KEYWORD2
+setMode	KEYWORD2
+reset	KEYWORD2
+sleep	KEYWORD2
+wakeup	KEYWORD2
+shutdown	KEYWORD2
+getPackStats	KEYWORD2
+update	KEYWORD2
+selfTest	KEYWORD2
+printDiagnostics	KEYWORD2
+printCellVoltages	KEYWORD2
+printTemperatures	KEYWORD2
+printStatus	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+PB7200_MODE_NORMAL	LITERAL1
+PB7200_MODE_SLEEP	LITERAL1
+PB7200_MODE_SHUTDOWN	LITERAL1
+PB7200_INTERFACE_I2C	LITERAL1
+PB7200_INTERFACE_UART	LITERAL1
+PB7200P80_I2C_ADDR	LITERAL1
+PB7200_MAX_CELLS	LITERAL1
+PB7200_MAX_TEMPS	LITERAL1
