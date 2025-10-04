@@ -1,23 +1,23 @@
 /**
  * CompleteBMS.ino
  * 
- * Exemplo completo de sistema BMS com PB7200P80
+ * Complete BMS system example with PB7200P80
  * 
- * Este exemplo demonstra:
- * - Monitoramento completo de todas as funções
- * - Estatísticas detalhadas do pack
- * - Balanceamento automático
- * - Proteções configuradas
- * - Interface serial interativa
+ * This example demonstrates:
+ * - Complete monitoring of all functions
+ * - Detailed pack statistics
+ * - Automatic balancing
+ * - Configured protections
+ * - Interactive serial interface
  * 
- * Comandos disponíveis:
- * - 'v' : Mostrar tensões
- * - 't' : Mostrar temperaturas
- * - 's' : Mostrar estatísticas
- * - 'p' : Mostrar proteções
- * - 'b' : Toggle balanceamento automático
- * - 'c' : Limpar falhas
- * - 'd' : Diagnóstico completo
+ * Available commands:
+ * - 'v' : Show voltages
+ * - 't' : Show temperatures
+ * - 's' : Show statistics
+ * - 'p' : Show protections
+ * - 'b' : Toggle automatic balancing
+ * - 'c' : Clear faults
+ * - 'd' : Complete diagnostics
  */
 
 #include <PB7200P80.h>
@@ -33,21 +33,21 @@ void setup() {
   
   printHeader();
   
-  // Inicializa BMS
-  Serial.println(F("Inicializando BMS..."));
+  // Initialize BMS
+  Serial.println(F("Initializing BMS..."));
   if (!bms.begin(NUM_CELLS)) {
-    Serial.println(F("✗ ERRO: Falha ao inicializar!"));
+    Serial.println(F("✗ ERROR: Initialization failed!"));
     while (1) delay(1000);
   }
-  Serial.println(F("✓ BMS inicializado!"));
+  Serial.println(F("✓ BMS initialized!"));
   
-  // Executa autoteste
+  // Run self-test
   Serial.println();
   bms.selfTest();
   
-  // Configura proteções (Li-ion)
+  // Configure protections (Li-ion)
   Serial.println();
-  Serial.println(F("Configurando proteções..."));
+  Serial.println(F("Configuring protections..."));
   ProtectionConfig config = {
     .overVoltageThreshold = 4.25,
     .underVoltageThreshold = 2.80,
@@ -60,16 +60,16 @@ void setup() {
   };
   
   if (bms.setProtectionConfig(config)) {
-    Serial.println(F("✓ Proteções configuradas!"));
+    Serial.println(F("✓ Protections configured!"));
   } else {
-    Serial.println(F("✗ Erro ao configurar proteções"));
+    Serial.println(F("✗ Error configuring protections"));
   }
   
-  // Habilita balanceamento automático
+  // Enable automatic balancing
   if (autoBalanceEnabled) {
-    Serial.println(F("Habilitando balanceamento automático..."));
+    Serial.println(F("Enabling automatic balancing..."));
     if (bms.setAutoBalancing(true, 50)) {
-      Serial.println(F("✓ Balanceamento automático ativo (limiar: 50mV)"));
+      Serial.println(F("✓ Automatic balancing active (threshold: 50mV)"));
     }
   }
   
@@ -81,23 +81,23 @@ void setup() {
 }
 
 void loop() {
-  // Atualiza leituras a cada 1 segundo
+  // Update readings every 1 second
   static unsigned long lastUpdate = 0;
   if (millis() - lastUpdate >= 1000) {
     lastUpdate = millis();
     bms.update();
     
-    // Verifica alertas críticos
+    // Check critical alerts
     checkCriticalAlerts();
   }
   
-  // Processa comandos seriais
+  // Process serial commands
   if (Serial.available()) {
     char cmd = Serial.read();
     processCommand(cmd);
   }
   
-  // Display automático a cada 5 segundos
+  // Automatic display every 5 seconds
   static unsigned long lastDisplay = 0;
   if (millis() - lastDisplay >= 5000) {
     lastDisplay = millis();
@@ -109,23 +109,23 @@ void loop() {
 
 void printHeader() {
   Serial.println(F("\n╔═══════════════════════════════════════╗"));
-  Serial.println(F("║   SISTEMA BMS COMPLETO - PB7200P80    ║"));
+  Serial.println(F("║   COMPLETE BMS SYSTEM - PB7200P80     ║"));
   Serial.println(F("║        Battery Management System       ║"));
   Serial.println(F("╚═══════════════════════════════════════╝\n"));
 }
 
 void printMenu() {
   Serial.println(F("┌───────────────────────────────────────┐"));
-  Serial.println(F("│          COMANDOS DISPONÍVEIS          │"));
+  Serial.println(F("│        AVAILABLE COMMANDS              │"));
   Serial.println(F("├───────────────────────────────────────┤"));
-  Serial.println(F("│ v - Mostrar tensões das células       │"));
-  Serial.println(F("│ t - Mostrar temperaturas              │"));
-  Serial.println(F("│ s - Mostrar estatísticas completas    │"));
-  Serial.println(F("│ p - Mostrar status de proteções       │"));
-  Serial.println(F("│ b - Toggle balanceamento automático   │"));
-  Serial.println(F("│ c - Limpar falhas                     │"));
-  Serial.println(F("│ d - Diagnóstico completo              │"));
-  Serial.println(F("│ h - Mostrar este menu                 │"));
+  Serial.println(F("│ v - Show cell voltages                │"));
+  Serial.println(F("│ t - Show temperatures                 │"));
+  Serial.println(F("│ s - Show complete statistics          │"));
+  Serial.println(F("│ p - Show protection status            │"));
+  Serial.println(F("│ b - Toggle automatic balancing        │"));
+  Serial.println(F("│ c - Clear faults                      │"));
+  Serial.println(F("│ d - Complete diagnostics              │"));
+  Serial.println(F("│ h - Show this menu                    │"));
   Serial.println(F("└───────────────────────────────────────┘"));
 }
 
@@ -157,16 +157,16 @@ void processCommand(char cmd) {
     case 'B':
       autoBalanceEnabled = !autoBalanceEnabled;
       bms.setAutoBalancing(autoBalanceEnabled, 50);
-      Serial.print(F("Balanceamento automático: "));
-      Serial.println(autoBalanceEnabled ? F("ATIVADO") : F("DESATIVADO"));
+      Serial.print(F("Automatic balancing: "));
+      Serial.println(autoBalanceEnabled ? F("ENABLED") : F("DISABLED"));
       break;
       
     case 'c':
     case 'C':
       if (bms.clearFaults()) {
-        Serial.println(F("✓ Falhas limpas"));
+        Serial.println(F("✓ Faults cleared"));
       } else {
-        Serial.println(F("✗ Erro ao limpar falhas"));
+        Serial.println(F("✗ Error clearing faults"));
       }
       break;
       
@@ -182,7 +182,7 @@ void processCommand(char cmd) {
       
     default:
       if (cmd != '\n' && cmd != '\r') {
-        Serial.println(F("Comando inválido. Digite 'h' para ajuda."));
+        Serial.println(F("Invalid command. Type 'h' for help."));
       }
       break;
   }
@@ -213,60 +213,60 @@ void showQuickStatus() {
 void showCompleteStats() {
   PackStats stats;
   if (!bms.getPackStats(stats)) {
-    Serial.println(F("Erro ao obter estatísticas"));
+    Serial.println(F("Error getting statistics"));
     return;
   }
   
   Serial.println(F("╔═══════════════════════════════════════╗"));
-  Serial.println(F("║      ESTATÍSTICAS COMPLETAS DO PACK    ║"));
+  Serial.println(F("║      COMPLETE PACK STATISTICS          ║"));
   Serial.println(F("╚═══════════════════════════════════════╝"));
   
-  Serial.println(F("\n┌─── Tensões ───────────────────────────┐"));
+  Serial.println(F("\n┌─── Voltages ──────────────────────────┐"));
   Serial.print(F("│ Total:        "));
   printValue(stats.totalVoltage, 3, "V");
-  Serial.print(F("│ Máxima:       "));
+  Serial.print(F("│ Maximum:      "));
   printValue(stats.maxCellVoltage, 3, "V");
-  Serial.print(F("│ Mínima:       "));
+  Serial.print(F("│ Minimum:      "));
   printValue(stats.minCellVoltage, 3, "V");
-  Serial.print(F("│ Média:        "));
+  Serial.print(F("│ Average:      "));
   printValue(stats.avgCellVoltage, 3, "V");
   Serial.print(F("│ Delta:        "));
   printValue(stats.voltageDelta * 1000, 1, "mV");
   Serial.println(F("└───────────────────────────────────────┘"));
   
-  Serial.println(F("\n┌─── Corrente e Potência ───────────────┐"));
-  Serial.print(F("│ Corrente:     "));
+  Serial.println(F("\n┌─── Current and Power ─────────────────┐"));
+  Serial.print(F("│ Current:      "));
   printValue(stats.current, 3, "A");
-  Serial.print(F("│ Potência:     "));
+  Serial.print(F("│ Power:        "));
   printValue(stats.power, 2, "W");
   Serial.print(F("│ Status:       "));
   if (stats.current > 0.1) {
-    Serial.println(F("CARREGANDO         │"));
+    Serial.println(F("CHARGING           │"));
   } else if (stats.current < -0.1) {
-    Serial.println(F("DESCARREGANDO      │"));
+    Serial.println(F("DISCHARGING        │"));
   } else {
-    Serial.println(F("REPOUSO            │"));
+    Serial.println(F("IDLE               │"));
   }
   Serial.println(F("└───────────────────────────────────────┘"));
   
-  Serial.println(F("\n┌─── Temperaturas ──────────────────────┐"));
-  Serial.print(F("│ Máxima:       "));
+  Serial.println(F("\n┌─── Temperatures ──────────────────────┐"));
+  Serial.print(F("│ Maximum:      "));
   printValue(stats.maxTemp, 1, "°C");
-  Serial.print(F("│ Mínima:       "));
+  Serial.print(F("│ Minimum:      "));
   printValue(stats.minTemp, 1, "°C");
   Serial.println(F("└───────────────────────────────────────┘"));
   
-  Serial.println(F("\n┌─── Índices ───────────────────────────┐"));
-  Serial.print(F("│ Célula V Max: "));
+  Serial.println(F("\n┌─── Indices ───────────────────────────┐"));
+  Serial.print(F("│ Max V Cell:   "));
   Serial.print(stats.maxCellIndex + 1);
   Serial.println(F("                    │"));
-  Serial.print(F("│ Célula V Min: "));
+  Serial.print(F("│ Min V Cell:   "));
   Serial.print(stats.minCellIndex + 1);
   Serial.println(F("                    │"));
-  Serial.print(F("│ Sensor T Max: "));
+  Serial.print(F("│ Max T Sensor: "));
   Serial.print(stats.maxTempIndex + 1);
   Serial.println(F("                    │"));
-  Serial.print(F("│ Sensor T Min: "));
+  Serial.print(F("│ Min T Sensor: "));
   Serial.print(stats.minTempIndex + 1);
   Serial.println(F("                    │"));
   Serial.println(F("└───────────────────────────────────────┘"));
@@ -299,12 +299,12 @@ void checkCriticalAlerts() {
   
   if (hasAlert && !alertShown) {
     Serial.println(F("\n╔═══════════════════════════════════════╗"));
-    Serial.println(F("║           ⚠  ALERTA CRÍTICO  ⚠        ║"));
+    Serial.println(F("║          ⚠  CRITICAL ALERT  ⚠         ║"));
     Serial.println(F("╚═══════════════════════════════════════╝"));
     bms.printStatus();
     alertShown = true;
   } else if (!hasAlert && alertShown) {
-    Serial.println(F("\n✓ Alertas limpos - Sistema normalizado"));
+    Serial.println(F("\n✓ Alerts cleared - System normalized"));
     alertShown = false;
   }
 }

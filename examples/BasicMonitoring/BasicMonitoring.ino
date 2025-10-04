@@ -1,60 +1,60 @@
 /**
  * BasicMonitoring.ino
  * 
- * Exemplo básico de monitoramento do PB7200P80
+ * Basic PB7200P80 monitoring example
  * 
- * Este exemplo demonstra:
- * - Inicialização do PB7200P80
- * - Leitura de tensões de células
- * - Leitura de temperaturas
- * - Leitura de corrente
- * - Exibição de dados no Serial Monitor
+ * This example demonstrates:
+ * - PB7200P80 initialization
+ * - Cell voltage reading
+ * - Temperature reading
+ * - Current reading
+ * - Data display on Serial Monitor
  * 
  * Hardware:
- * - Arduino (qualquer placa)
- * - PB7200P80 conectado via I2C
- *   - SDA -> A4 (Uno/Nano) ou SDA (outras placas)
- *   - SCL -> A5 (Uno/Nano) ou SCL (outras placas)
- *   - VCC -> 3.3V ou 5V
+ * - Arduino (any board)
+ * - PB7200P80 connected via I2C
+ *   - SDA -> A4 (Uno/Nano) or SDA (other boards)
+ *   - SCL -> A5 (Uno/Nano) or SCL (other boards)
+ *   - VCC -> 3.3V or 5V
  *   - GND -> GND
  */
 
 #include <PB7200P80.h>
 
-// Cria objeto PB7200P80 com interface I2C no endereço padrão 0x55
+// Create PB7200P80 object with I2C interface at default address 0x55
 PB7200P80 bms(PB7200_INTERFACE_I2C, 0x55);
 
-// Configuração do número de células
-const uint8_t NUM_CELLS = 4;  // Altere conforme seu pack
+// Number of cells configuration
+const uint8_t NUM_CELLS = 4;  // Change according to your pack
 
 void setup() {
-  // Inicializa Serial
+  // Initialize Serial
   Serial.begin(115200);
   while (!Serial) delay(10);
   
   Serial.println(F("==========================================="));
-  Serial.println(F("    PB7200P80 - Monitoramento Básico       "));
+  Serial.println(F("      PB7200P80 - Basic Monitoring         "));
   Serial.println(F("==========================================="));
   Serial.println();
   
-  // Inicializa PB7200P80
-  Serial.print(F("Inicializando PB7200P80 com "));
+  // Initialize PB7200P80
+  Serial.print(F("Initializing PB7200P80 with "));
   Serial.print(NUM_CELLS);
-  Serial.println(F(" células..."));
+  Serial.println(F(" cells..."));
   
   if (!bms.begin(NUM_CELLS)) {
-    Serial.println(F("ERRO: Falha ao inicializar PB7200P80!"));
-    Serial.println(F("Verifique as conexões:"));
-    Serial.println(F("  - SDA/SCL conectados corretamente"));
-    Serial.println(F("  - Alimentação do PB7200P80"));
-    Serial.println(F("  - Endereço I2C correto"));
+    Serial.println(F("ERROR: Failed to initialize PB7200P80!"));
+    Serial.println(F("Check connections:"));
+    Serial.println(F("  - SDA/SCL connected correctly"));
+    Serial.println(F("  - PB7200P80 power supply"));
+    Serial.println(F("  - Correct I2C address"));
     while (1) delay(1000);
   }
   
-  Serial.println(F("PB7200P80 inicializado com sucesso!"));
+  Serial.println(F("PB7200P80 initialized successfully!"));
   Serial.println();
   
-  // Executa autoteste
+  // Run self-test
   bms.selfTest();
   Serial.println();
   
@@ -62,38 +62,38 @@ void setup() {
 }
 
 void loop() {
-  // Atualiza todas as leituras
+  // Update all readings
   bms.update();
   
-  // Cabeçalho
+  // Header
   Serial.println(F("========================================"));
-  Serial.println(F("          LEITURAS DO BMS               "));
+  Serial.println(F("            BMS READINGS                "));
   Serial.println(F("========================================"));
   
-  // Tensões das células
-  Serial.println(F("\nTensões das Células:"));
+  // Cell voltages
+  Serial.println(F("\nCell Voltages:"));
   Serial.println(F("----------------------------------------"));
   for (uint8_t i = 0; i < NUM_CELLS; i++) {
     float voltage = bms.getCellVoltage(i);
-    Serial.print(F("Célula "));
+    Serial.print(F("Cell "));
     Serial.print(i + 1);
     Serial.print(F(": "));
     Serial.print(voltage, 3);
     Serial.println(F(" V"));
   }
   
-  // Estatísticas de tensão
-  Serial.println(F("\nEstatísticas de Tensão:"));
+  // Voltage statistics
+  Serial.println(F("\nVoltage Statistics:"));
   Serial.println(F("----------------------------------------"));
-  Serial.print(F("Tensão Total:   "));
+  Serial.print(F("Total Voltage:  "));
   Serial.print(bms.getTotalVoltage(), 3);
   Serial.println(F(" V"));
   
-  Serial.print(F("Tensão Máxima:  "));
+  Serial.print(F("Maximum Voltage:"));
   Serial.print(bms.getMaxCellVoltage(), 3);
   Serial.println(F(" V"));
   
-  Serial.print(F("Tensão Mínima:  "));
+  Serial.print(F("Minimum Voltage:"));
   Serial.print(bms.getMinCellVoltage(), 3);
   Serial.println(F(" V"));
   
@@ -101,10 +101,10 @@ void loop() {
   Serial.print(bms.getVoltageDelta() * 1000, 1);
   Serial.println(F(" mV"));
   
-  // Temperaturas
-  Serial.println(F("\nTemperaturas:"));
+  // Temperatures
+  Serial.println(F("\nTemperatures:"));
   Serial.println(F("----------------------------------------"));
-  for (uint8_t i = 0; i < 4; i++) {  // Mostra 4 sensores
+  for (uint8_t i = 0; i < 4; i++) {  // Show 4 sensors
     float temp = bms.getTemperature(i);
     Serial.print(F("Sensor "));
     Serial.print(i + 1);
@@ -113,53 +113,53 @@ void loop() {
     Serial.println(F(" °C"));
   }
   
-  Serial.print(F("Temp. Máxima:   "));
+  Serial.print(F("Max. Temp.:     "));
   Serial.print(bms.getMaxTemperature(), 1);
   Serial.println(F(" °C"));
   
-  Serial.print(F("Temp. Mínima:   "));
+  Serial.print(F("Min. Temp.:     "));
   Serial.print(bms.getMinTemperature(), 1);
   Serial.println(F(" °C"));
   
-  // Corrente e Potência
-  Serial.println(F("\nCorrente e Potência:"));
+  // Current and Power
+  Serial.println(F("\nCurrent and Power:"));
   Serial.println(F("----------------------------------------"));
   float current = bms.getCurrent();
-  Serial.print(F("Corrente:       "));
+  Serial.print(F("Current:        "));
   Serial.print(current, 3);
   Serial.println(F(" A"));
   
   float power = bms.getPower();
-  Serial.print(F("Potência:       "));
+  Serial.print(F("Power:          "));
   Serial.print(power, 2);
   Serial.println(F(" W"));
   
   if (current > 0) {
-    Serial.println(F("Status:         CARREGANDO"));
+    Serial.println(F("Status:         CHARGING"));
   } else if (current < -0.1) {
-    Serial.println(F("Status:         DESCARREGANDO"));
+    Serial.println(F("Status:         DISCHARGING"));
   } else {
-    Serial.println(F("Status:         REPOUSO"));
+    Serial.println(F("Status:         IDLE"));
   }
   
-  // Status e Proteções
-  Serial.println(F("\nStatus do Sistema:"));
+  // System Status and Protections
+  Serial.println(F("\nSystem Status:"));
   Serial.println(F("----------------------------------------"));
   
-  Serial.print(F("Sobretensão:    "));
-  Serial.println(bms.isOverVoltage() ? F("ALERTA!") : F("OK"));
+  Serial.print(F("Overvoltage:    "));
+  Serial.println(bms.isOverVoltage() ? F("ALERT!") : F("OK"));
   
-  Serial.print(F("Subtensão:      "));
-  Serial.println(bms.isUnderVoltage() ? F("ALERTA!") : F("OK"));
+  Serial.print(F("Undervoltage:   "));
+  Serial.println(bms.isUnderVoltage() ? F("ALERT!") : F("OK"));
   
-  Serial.print(F("Sobrecorrente:  "));
-  Serial.println(bms.isOverCurrent() ? F("ALERTA!") : F("OK"));
+  Serial.print(F("Overcurrent:    "));
+  Serial.println(bms.isOverCurrent() ? F("ALERT!") : F("OK"));
   
-  Serial.print(F("Sobretemperatura: "));
-  Serial.println(bms.isOverTemperature() ? F("ALERTA!") : F("OK"));
+  Serial.print(F("Over-temp.:     "));
+  Serial.println(bms.isOverTemperature() ? F("ALERT!") : F("OK"));
   
   Serial.println(F("\n========================================\n"));
   
-  // Aguarda 2 segundos antes da próxima leitura
+  // Wait 2 seconds before next reading
   delay(2000);
 }

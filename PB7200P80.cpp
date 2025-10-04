@@ -1,7 +1,7 @@
 /**
  * @file PB7200P80.cpp
- * @brief Implementação da biblioteca Arduino para o AFE PB7200P80
- * @author Biblioteca PB7200P80
+ * @brief Implementation of Arduino library for PB7200P80 AFE
+ * @author PB7200P80 Library
  * @version 1.0.0
  * @date 2025-10-04
  */
@@ -9,7 +9,7 @@
 #include "PB7200P80.h"
 
 /**
- * @brief Construtor da classe
+ * @brief Class constructor
  */
 PB7200P80::PB7200P80(PB7200_Interface interface, uint8_t address, TwoWire *wire) {
     _interface = interface;
@@ -23,7 +23,7 @@ PB7200P80::PB7200P80(PB7200_Interface interface, uint8_t address, TwoWire *wire)
     _faultStatus = 0;
     _lastUpdate = 0;
     
-    // Inicializa arrays
+    // Initialize arrays
     for (uint8_t i = 0; i < PB7200_MAX_CELLS; i++) {
         _cellVoltages[i] = 0.0;
     }
@@ -33,7 +33,7 @@ PB7200P80::PB7200P80(PB7200_Interface interface, uint8_t address, TwoWire *wire)
 }
 
 /**
- * @brief Inicializa a comunicação com o PB7200P80
+ * @brief Initialize communication with PB7200P80
  */
 bool PB7200P80::begin(uint8_t cellCount) {
     if (cellCount == 0 || cellCount > PB7200_MAX_CELLS) {
@@ -42,38 +42,38 @@ bool PB7200P80::begin(uint8_t cellCount) {
     
     _cellCount = cellCount;
     
-    // Inicializa interface de comunicação
+    // Initialize communication interface
     if (_interface == PB7200_INTERFACE_I2C) {
         _wire->begin();
-        _wire->setClock(100000); // 100kHz padrão
+        _wire->setClock(100000); // 100kHz default
     } else {
-        // TODO: Implementar interface UART se necessário
+        // TODO: Implement UART interface if needed
         return false;
     }
     
-    delay(100); // Aguarda estabilização
+    delay(100); // Wait for stabilization
     
-    // Verifica comunicação
+    // Check communication
     if (!isConnected()) {
         return false;
     }
     
-    // Configuração inicial
-    uint8_t ctrlValue = 0x01; // Modo normal, ADC habilitado
+    // Initial configuration
+    uint8_t ctrlValue = 0x01; // Normal mode, ADC enabled
     if (!writeRegister(PB7200_REG_CONTROL, ctrlValue)) {
         return false;
     }
     
     delay(50);
     
-    // Primeira leitura
+    // First reading
     update();
     
     return true;
 }
 
 /**
- * @brief Verifica se o dispositivo está respondendo
+ * @brief Check if device is responding
  */
 bool PB7200P80::isConnected() {
     uint8_t deviceID;
@@ -84,7 +84,7 @@ bool PB7200P80::isConnected() {
 }
 
 /**
- * @brief Lê o ID do dispositivo
+ * @brief Read device ID
  */
 uint8_t PB7200P80::getDeviceID() {
     uint8_t deviceID = 0;
@@ -92,10 +92,10 @@ uint8_t PB7200P80::getDeviceID() {
     return deviceID;
 }
 
-// ========== Leitura de Tensões ==========
+// ========== Voltage Reading ==========
 
 /**
- * @brief Lê a tensão de uma célula específica
+ * @brief Read voltage of a specific cell
  */
 float PB7200P80::getCellVoltage(uint8_t cellIndex) {
     if (!isValidCellIndex(cellIndex)) {
@@ -115,7 +115,7 @@ float PB7200P80::getCellVoltage(uint8_t cellIndex) {
 }
 
 /**
- * @brief Lê todas as tensões das células
+ * @brief Read all cell voltages
  */
 bool PB7200P80::getAllCellVoltages(float *voltages, uint8_t count) {
     if (count > _cellCount || count > PB7200_MAX_CELLS) {
@@ -138,7 +138,7 @@ bool PB7200P80::getAllCellVoltages(float *voltages, uint8_t count) {
 }
 
 /**
- * @brief Lê dados completos de uma célula
+ * @brief Read complete cell data
  */
 bool PB7200P80::getCellData(uint8_t cellIndex, CellData &data) {
     if (!isValidCellIndex(cellIndex)) {
@@ -148,7 +148,7 @@ bool PB7200P80::getCellData(uint8_t cellIndex, CellData &data) {
     data.voltage = getCellVoltage(cellIndex);
     data.balancing = isBalancing(cellIndex);
     
-    // Verifica proteções
+    // Check protections
     uint8_t faults = getFaultStatus();
     data.overvoltage = (faults & PB7200_STATUS_OVP) != 0;
     data.undervoltage = (faults & PB7200_STATUS_UVP) != 0;
@@ -157,7 +157,7 @@ bool PB7200P80::getCellData(uint8_t cellIndex, CellData &data) {
 }
 
 /**
- * @brief Obtém a tensão total do pack
+ * @brief Get total pack voltage
  */
 float PB7200P80::getTotalVoltage() {
     float total = 0.0;
@@ -168,7 +168,7 @@ float PB7200P80::getTotalVoltage() {
 }
 
 /**
- * @brief Obtém a maior tensão entre as células
+ * @brief Get maximum cell voltage
  */
 float PB7200P80::getMaxCellVoltage() {
     float maxVoltage = 0.0;
@@ -181,10 +181,10 @@ float PB7200P80::getMaxCellVoltage() {
 }
 
 /**
- * @brief Obtém a menor tensão entre as células
+ * @brief Get minimum cell voltage
  */
 float PB7200P80::getMinCellVoltage() {
-    float minVoltage = 5.0; // Valor alto inicial
+    float minVoltage = 5.0; // High initial value
     for (uint8_t i = 0; i < _cellCount; i++) {
         if (_cellVoltages[i] < minVoltage && _cellVoltages[i] > 0.0) {
             minVoltage = _cellVoltages[i];
@@ -194,16 +194,16 @@ float PB7200P80::getMinCellVoltage() {
 }
 
 /**
- * @brief Obtém a diferença entre maior e menor tensão
+ * @brief Get difference between max and min voltage
  */
 float PB7200P80::getVoltageDelta() {
     return getMaxCellVoltage() - getMinCellVoltage();
 }
 
-// ========== Leitura de Temperatura ==========
+// ========== Temperature Reading ==========
 
 /**
- * @brief Lê a temperatura de um sensor específico
+ * @brief Read temperature from specific sensor
  */
 float PB7200P80::getTemperature(uint8_t tempIndex) {
     if (!isValidTempIndex(tempIndex)) {
@@ -223,7 +223,7 @@ float PB7200P80::getTemperature(uint8_t tempIndex) {
 }
 
 /**
- * @brief Lê todas as temperaturas
+ * @brief Read all temperatures
  */
 bool PB7200P80::getAllTemperatures(float *temperatures, uint8_t count) {
     if (count > PB7200_MAX_TEMPS) {
@@ -246,7 +246,7 @@ bool PB7200P80::getAllTemperatures(float *temperatures, uint8_t count) {
 }
 
 /**
- * @brief Obtém a temperatura máxima
+ * @brief Get maximum temperature
  */
 float PB7200P80::getMaxTemperature() {
     float maxTemp = -100.0;
@@ -259,7 +259,7 @@ float PB7200P80::getMaxTemperature() {
 }
 
 /**
- * @brief Obtém a temperatura mínima
+ * @brief Get minimum temperature
  */
 float PB7200P80::getMinTemperature() {
     float minTemp = 200.0;
@@ -271,10 +271,10 @@ float PB7200P80::getMinTemperature() {
     return minTemp;
 }
 
-// ========== Leitura de Corrente ==========
+// ========== Current Reading ==========
 
 /**
- * @brief Lê a corrente do pack
+ * @brief Read pack current
  */
 float PB7200P80::getCurrent() {
     uint8_t data[2];
@@ -289,16 +289,16 @@ float PB7200P80::getCurrent() {
 }
 
 /**
- * @brief Lê a potência do pack
+ * @brief Read pack power
  */
 float PB7200P80::getPower() {
     return getTotalVoltage() * _current;
 }
 
-// ========== Status e Proteções ==========
+// ========== Status and Protections ==========
 
 /**
- * @brief Lê o registro de status
+ * @brief Read status register
  */
 uint8_t PB7200P80::getStatus() {
     readRegister(PB7200_REG_STATUS, _status);
@@ -306,7 +306,7 @@ uint8_t PB7200P80::getStatus() {
 }
 
 /**
- * @brief Lê o registro de falhas
+ * @brief Read fault register
  */
 uint8_t PB7200P80::getFaultStatus() {
     readRegister(PB7200_REG_FAULT_STATUS, _faultStatus);
@@ -314,58 +314,58 @@ uint8_t PB7200P80::getFaultStatus() {
 }
 
 /**
- * @brief Verifica se há sobretensão
+ * @brief Check for overvoltage
  */
 bool PB7200P80::isOverVoltage() {
     return (getFaultStatus() & PB7200_STATUS_OVP) != 0;
 }
 
 /**
- * @brief Verifica se há subtensão
+ * @brief Check for undervoltage
  */
 bool PB7200P80::isUnderVoltage() {
     return (getFaultStatus() & PB7200_STATUS_UVP) != 0;
 }
 
 /**
- * @brief Verifica se há sobrecorrente
+ * @brief Check for overcurrent
  */
 bool PB7200P80::isOverCurrent() {
     return (getFaultStatus() & PB7200_STATUS_OCP) != 0;
 }
 
 /**
- * @brief Verifica se há sobretemperatura
+ * @brief Check for overtemperature
  */
 bool PB7200P80::isOverTemperature() {
     return (getFaultStatus() & PB7200_STATUS_OTP) != 0;
 }
 
 /**
- * @brief Verifica se há subtemperatura
+ * @brief Check for undertemperature
  */
 bool PB7200P80::isUnderTemperature() {
     return (getFaultStatus() & PB7200_STATUS_UTP) != 0;
 }
 
 /**
- * @brief Limpa flags de falha
+ * @brief Clear fault flags
  */
 bool PB7200P80::clearFaults() {
     return writeRegister(PB7200_REG_FAULT_STATUS, 0x00);
 }
 
-// ========== Balanceamento ==========
+// ========== Cell Balancing ==========
 
 /**
- * @brief Habilita balanceamento de uma célula
+ * @brief Enable cell balancing
  */
 bool PB7200P80::setBalancing(uint8_t cellIndex, bool enable) {
     if (!isValidCellIndex(cellIndex)) {
         return false;
     }
     
-    // Determina qual registro de controle usar (3 registros para 20 células)
+    // Determine which control register to use (3 registers for 20 cells)
     uint8_t regOffset = cellIndex / 8;
     uint8_t bitOffset = cellIndex % 8;
     uint8_t regAddr = PB7200_REG_BALANCE_CTRL1 + regOffset;
@@ -385,17 +385,17 @@ bool PB7200P80::setBalancing(uint8_t cellIndex, bool enable) {
 }
 
 /**
- * @brief Habilita balanceamento automático
+ * @brief Enable automatic balancing
  */
 bool PB7200P80::setAutoBalancing(bool enable, uint16_t threshold) {
-    // Implementação simplificada - em chip real, consultar datasheet
+    // Simplified implementation - consult datasheet for actual chip
     if (enable) {
-        // Habilita modo automático
+        // Enable automatic mode
         uint8_t ctrlValue;
         if (!readRegister(PB7200_REG_CONTROL, ctrlValue)) {
             return false;
         }
-        ctrlValue |= 0x10; // Bit de auto-balanceamento
+        ctrlValue |= 0x10; // Auto-balancing bit
         return writeRegister(PB7200_REG_CONTROL, ctrlValue);
     } else {
         return stopAllBalancing();
@@ -403,7 +403,7 @@ bool PB7200P80::setAutoBalancing(bool enable, uint16_t threshold) {
 }
 
 /**
- * @brief Verifica se uma célula está sendo balanceada
+ * @brief Check if a cell is being balanced
  */
 bool PB7200P80::isBalancing(uint8_t cellIndex) {
     if (!isValidCellIndex(cellIndex)) {
@@ -423,7 +423,7 @@ bool PB7200P80::isBalancing(uint8_t cellIndex) {
 }
 
 /**
- * @brief Desabilita balanceamento de todas as células
+ * @brief Disable balancing for all cells
  */
 bool PB7200P80::stopAllBalancing() {
     bool success = true;
@@ -433,15 +433,15 @@ bool PB7200P80::stopAllBalancing() {
     return success;
 }
 
-// ========== Configuração ==========
+// ========== Configuration ==========
 
 /**
- * @brief Configura proteções
+ * @brief Configure protections
  */
 bool PB7200P80::setProtectionConfig(const ProtectionConfig &config) {
     bool success = true;
     
-    // Converte e escreve limites de tensão
+    // Convert and write voltage limits
     uint16_t ovpRaw = voltageToRaw(config.overVoltageThreshold);
     uint16_t uvpRaw = voltageToRaw(config.underVoltageThreshold);
     
@@ -450,12 +450,12 @@ bool PB7200P80::setProtectionConfig(const ProtectionConfig &config) {
     success &= writeRegister(PB7200_REG_CONFIG_UVP, (uvpRaw >> 8) & 0xFF);
     success &= writeRegister(PB7200_REG_CONFIG_UVP + 1, uvpRaw & 0xFF);
     
-    // Converte e escreve limite de corrente
+    // Convert and write current limit
     int16_t ocpRaw = currentToRaw(config.overCurrentThreshold);
     success &= writeRegister(PB7200_REG_CONFIG_OCP, (ocpRaw >> 8) & 0xFF);
     success &= writeRegister(PB7200_REG_CONFIG_OCP + 1, ocpRaw & 0xFF);
     
-    // Converte e escreve limites de temperatura
+    // Convert and write temperature limits
     int16_t otpRaw = tempToRaw(config.overTempThreshold);
     int16_t utpRaw = tempToRaw(config.underTempThreshold);
     
@@ -468,13 +468,13 @@ bool PB7200P80::setProtectionConfig(const ProtectionConfig &config) {
 }
 
 /**
- * @brief Lê configurações de proteção
+ * @brief Read protection configuration
  */
 bool PB7200P80::getProtectionConfig(ProtectionConfig &config) {
     uint8_t data[2];
     bool success = true;
     
-    // Lê limites de tensão
+    // Read voltage limits
     if (readRegisters(PB7200_REG_CONFIG_OVP, data, 2)) {
         uint16_t raw = (data[0] << 8) | data[1];
         config.overVoltageThreshold = rawToVoltage(raw);
@@ -489,7 +489,7 @@ bool PB7200P80::getProtectionConfig(ProtectionConfig &config) {
         success = false;
     }
     
-    // Lê limite de corrente
+    // Read current limit
     if (readRegisters(PB7200_REG_CONFIG_OCP, data, 2)) {
         int16_t raw = (data[0] << 8) | data[1];
         config.overCurrentThreshold = rawToCurrent(raw);
@@ -497,7 +497,7 @@ bool PB7200P80::getProtectionConfig(ProtectionConfig &config) {
         success = false;
     }
     
-    // Lê limites de temperatura
+    // Read temperature limits
     if (readRegisters(PB7200_REG_CONFIG_OTP, data, 2)) {
         int16_t raw = (data[0] << 8) | data[1];
         config.overTempThreshold = rawToTemp(raw);
@@ -516,7 +516,7 @@ bool PB7200P80::getProtectionConfig(ProtectionConfig &config) {
 }
 
 /**
- * @brief Define o modo de operação
+ * @brief Set operation mode
  */
 bool PB7200P80::setMode(PB7200_Mode mode) {
     uint8_t ctrlValue;
@@ -524,7 +524,7 @@ bool PB7200P80::setMode(PB7200_Mode mode) {
         return false;
     }
     
-    // Limpa bits de modo e define novo modo
+    // Clear mode bits and set new mode
     ctrlValue &= 0xFC;
     ctrlValue |= (mode & 0x03);
     
@@ -532,10 +532,10 @@ bool PB7200P80::setMode(PB7200_Mode mode) {
 }
 
 /**
- * @brief Reinicia o dispositivo
+ * @brief Reset device
  */
 bool PB7200P80::reset() {
-    // Escreve comando de reset
+    // Write reset command
     if (writeRegister(PB7200_REG_CONTROL, 0x80)) {
         delay(100);
         return begin(_cellCount);
@@ -544,33 +544,33 @@ bool PB7200P80::reset() {
 }
 
 /**
- * @brief Entra em modo sleep
+ * @brief Enter sleep mode
  */
 bool PB7200P80::sleep() {
     return setMode(PB7200_MODE_SLEEP);
 }
 
 /**
- * @brief Acorda do modo sleep
+ * @brief Wake up from sleep mode
  */
 bool PB7200P80::wakeup() {
     return setMode(PB7200_MODE_NORMAL);
 }
 
 /**
- * @brief Desliga o dispositivo
+ * @brief Shutdown device
  */
 bool PB7200P80::shutdown() {
     return writeRegister(PB7200_REG_SHUTDOWN, 0x01);
 }
 
-// ========== Estatísticas ==========
+// ========== Statistics ==========
 
 /**
- * @brief Obtém estatísticas completas do pack
+ * @brief Get complete pack statistics
  */
 bool PB7200P80::getPackStats(PackStats &stats) {
-    // Atualiza leituras
+    // Update readings
     if (!update()) {
         return false;
     }
@@ -582,7 +582,7 @@ bool PB7200P80::getPackStats(PackStats &stats) {
     stats.maxCellIndex = 0;
     stats.minCellIndex = 0;
     
-    // Processa tensões
+    // Process voltages
     for (uint8_t i = 0; i < _cellCount; i++) {
         stats.totalVoltage += _cellVoltages[i];
         
@@ -600,7 +600,7 @@ bool PB7200P80::getPackStats(PackStats &stats) {
     stats.avgCellVoltage = stats.totalVoltage / _cellCount;
     stats.voltageDelta = stats.maxCellVoltage - stats.minCellVoltage;
     
-    // Processa temperaturas
+    // Process temperatures
     stats.maxTemp = -100.0;
     stats.minTemp = 200.0;
     stats.maxTempIndex = 0;
@@ -618,7 +618,7 @@ bool PB7200P80::getPackStats(PackStats &stats) {
         }
     }
     
-    // Corrente e potência
+    // Current and power
     stats.current = _current;
     stats.power = stats.totalVoltage * _current;
     
@@ -626,12 +626,12 @@ bool PB7200P80::getPackStats(PackStats &stats) {
 }
 
 /**
- * @brief Atualiza todas as leituras (otimizado)
+ * @brief Update all readings (optimized)
  */
 bool PB7200P80::update() {
     bool success = true;
     
-    // Lê todas as tensões
+    // Read all voltages
     float voltages[PB7200_MAX_CELLS];
     if (getAllCellVoltages(voltages, _cellCount)) {
         for (uint8_t i = 0; i < _cellCount; i++) {
@@ -641,7 +641,7 @@ bool PB7200P80::update() {
         success = false;
     }
     
-    // Lê todas as temperaturas
+    // Read all temperatures
     float temps[PB7200_MAX_TEMPS];
     if (getAllTemperatures(temps, _tempSensorCount)) {
         for (uint8_t i = 0; i < _tempSensorCount; i++) {
@@ -651,10 +651,10 @@ bool PB7200P80::update() {
         success = false;
     }
     
-    // Lê corrente
+    // Read current
     getCurrent();
     
-    // Lê status
+    // Read status
     getStatus();
     getFaultStatus();
     
@@ -663,32 +663,32 @@ bool PB7200P80::update() {
     return success;
 }
 
-// ========== Diagnóstico ==========
+// ========== Diagnostics ==========
 
 /**
- * @brief Executa autoteste
+ * @brief Run self-test
  */
 bool PB7200P80::selfTest() {
-    // Verifica comunicação
+    // Check communication
     if (!isConnected()) {
-        Serial.println(F("FALHA: Sem comunicação com PB7200P80"));
+        Serial.println(F("FAIL: No communication with PB7200P80"));
         return false;
     }
     
-    Serial.println(F("OK: Comunicação estabelecida"));
+    Serial.println(F("OK: Communication established"));
     
-    // Verifica ID do dispositivo
+    // Check device ID
     uint8_t deviceID = getDeviceID();
     Serial.print(F("Device ID: 0x"));
     Serial.println(deviceID, HEX);
     
-    // Verifica leitura de tensões
+    // Check voltage reading
     update();
     float totalV = getTotalVoltage();
     if (totalV < 0.1) {
-        Serial.println(F("AVISO: Tensão total muito baixa"));
+        Serial.println(F("WARNING: Total voltage too low"));
     } else {
-        Serial.print(F("OK: Tensão total = "));
+        Serial.print(F("OK: Total voltage = "));
         Serial.print(totalV);
         Serial.println(F(" V"));
     }
@@ -697,17 +697,17 @@ bool PB7200P80::selfTest() {
 }
 
 /**
- * @brief Imprime informações de diagnóstico
+ * @brief Print diagnostic information
  */
 void PB7200P80::printDiagnostics() {
-    Serial.println(F("========== Diagnóstico PB7200P80 =========="));
+    Serial.println(F("========== PB7200P80 Diagnostics =========="));
     Serial.print(F("Device ID: 0x"));
     Serial.println(getDeviceID(), HEX);
-    Serial.print(F("Células configuradas: "));
+    Serial.print(F("Configured cells: "));
     Serial.println(_cellCount);
     Serial.print(F("Status: 0x"));
     Serial.println(getStatus(), HEX);
-    Serial.print(F("Falhas: 0x"));
+    Serial.print(F("Faults: 0x"));
     Serial.println(getFaultStatus(), HEX);
     Serial.println();
     
@@ -716,22 +716,22 @@ void PB7200P80::printDiagnostics() {
     printTemperatures();
     Serial.println();
     
-    Serial.print(F("Corrente: "));
+    Serial.print(F("Current: "));
     Serial.print(_current, 3);
     Serial.println(F(" A"));
-    Serial.print(F("Potência: "));
+    Serial.print(F("Power: "));
     Serial.print(getPower(), 2);
     Serial.println(F(" W"));
     Serial.println(F("=========================================="));
 }
 
 /**
- * @brief Imprime todas as tensões das células
+ * @brief Print all cell voltages
  */
 void PB7200P80::printCellVoltages() {
-    Serial.println(F("Tensões das Células:"));
+    Serial.println(F("Cell Voltages:"));
     for (uint8_t i = 0; i < _cellCount; i++) {
-        Serial.print(F("  Célula "));
+        Serial.print(F("  Cell "));
         Serial.print(i + 1);
         Serial.print(F(": "));
         Serial.print(_cellVoltages[i], 3);
@@ -749,10 +749,10 @@ void PB7200P80::printCellVoltages() {
 }
 
 /**
- * @brief Imprime todas as temperaturas
+ * @brief Print all temperatures
  */
 void PB7200P80::printTemperatures() {
-    Serial.println(F("Temperaturas:"));
+    Serial.println(F("Temperatures:"));
     for (uint8_t i = 0; i < _tempSensorCount; i++) {
         Serial.print(F("  Sensor "));
         Serial.print(i + 1);
@@ -763,31 +763,31 @@ void PB7200P80::printTemperatures() {
 }
 
 /**
- * @brief Imprime status completo
+ * @brief Print complete status
  */
 void PB7200P80::printStatus() {
     uint8_t status = getStatus();
     uint8_t faults = getFaultStatus();
     
-    Serial.println(F("Status do Sistema:"));
-    Serial.print(F("  Sobretensão: "));
-    Serial.println((faults & PB7200_STATUS_OVP) ? F("SIM") : F("NÃO"));
-    Serial.print(F("  Subtensão: "));
-    Serial.println((faults & PB7200_STATUS_UVP) ? F("SIM") : F("NÃO"));
-    Serial.print(F("  Sobrecorrente: "));
-    Serial.println((faults & PB7200_STATUS_OCP) ? F("SIM") : F("NÃO"));
-    Serial.print(F("  Sobretemperatura: "));
-    Serial.println((faults & PB7200_STATUS_OTP) ? F("SIM") : F("NÃO"));
-    Serial.print(F("  Balanceamento: "));
-    Serial.println((status & PB7200_STATUS_BALANCING) ? F("ATIVO") : F("INATIVO"));
-    Serial.print(F("  Carregando: "));
-    Serial.println((status & PB7200_STATUS_CHARGING) ? F("SIM") : F("NÃO"));
+    Serial.println(F("System Status:"));
+    Serial.print(F("  Overvoltage: "));
+    Serial.println((faults & PB7200_STATUS_OVP) ? F("YES") : F("NO"));
+    Serial.print(F("  Undervoltage: "));
+    Serial.println((faults & PB7200_STATUS_UVP) ? F("YES") : F("NO"));
+    Serial.print(F("  Overcurrent: "));
+    Serial.println((faults & PB7200_STATUS_OCP) ? F("YES") : F("NO"));
+    Serial.print(F("  Overtemperature: "));
+    Serial.println((faults & PB7200_STATUS_OTP) ? F("YES") : F("NO"));
+    Serial.print(F("  Balancing: "));
+    Serial.println((status & PB7200_STATUS_BALANCING) ? F("ACTIVE") : F("INACTIVE"));
+    Serial.print(F("  Charging: "));
+    Serial.println((status & PB7200_STATUS_CHARGING) ? F("YES") : F("NO"));
 }
 
-// ========== Métodos Privados de Comunicação ==========
+// ========== Private Communication Methods ==========
 
 /**
- * @brief Escreve um registro
+ * @brief Write a register
  */
 bool PB7200P80::writeRegister(uint8_t reg, uint8_t value) {
     if (_interface == PB7200_INTERFACE_I2C) {
@@ -800,7 +800,7 @@ bool PB7200P80::writeRegister(uint8_t reg, uint8_t value) {
 }
 
 /**
- * @brief Escreve múltiplos registros
+ * @brief Write multiple registers
  */
 bool PB7200P80::writeRegisters(uint8_t reg, uint8_t *values, uint8_t length) {
     if (_interface == PB7200_INTERFACE_I2C) {
@@ -815,7 +815,7 @@ bool PB7200P80::writeRegisters(uint8_t reg, uint8_t *values, uint8_t length) {
 }
 
 /**
- * @brief Lê um registro
+ * @brief Read a register
  */
 bool PB7200P80::readRegister(uint8_t reg, uint8_t &value) {
     if (_interface == PB7200_INTERFACE_I2C) {
@@ -834,7 +834,7 @@ bool PB7200P80::readRegister(uint8_t reg, uint8_t &value) {
 }
 
 /**
- * @brief Lê múltiplos registros
+ * @brief Read multiple registers
  */
 bool PB7200P80::readRegisters(uint8_t reg, uint8_t *values, uint8_t length) {
     if (_interface == PB7200_INTERFACE_I2C) {
@@ -855,7 +855,7 @@ bool PB7200P80::readRegisters(uint8_t reg, uint8_t *values, uint8_t length) {
     return false;
 }
 
-// ========== Métodos Auxiliares ==========
+// ========== Helper Methods ==========
 
 uint16_t PB7200P80::voltageToRaw(float voltage) {
     return (uint16_t)(voltage / PB7200_VOLTAGE_LSB);

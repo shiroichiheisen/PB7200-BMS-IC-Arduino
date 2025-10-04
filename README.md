@@ -1,62 +1,64 @@
-# Manual da Biblioteca PB7200P80 para Arduino
+# PB7200P80 Arduino Library
 
-## Versão 1.0.0
+## Version 1.0.0
 
----
-
-## Índice
-
-1. [Introdução](#introdução)
-2. [Instalação](#instalação)
-3. [Conexões de Hardware](#conexões-de-hardware)
-4. [Início Rápido](#início-rápido)
-5. [Referência da API](#referência-da-api)
-6. [Exemplos de Uso](#exemplos-de-uso)
-7. [Configuração de Proteções](#configuração-de-proteções)
-8. [Balanceamento de Células](#balanceamento-de-células)
-9. [Solução de Problemas](#solução-de-problemas)
-10. [Perguntas Frequentes](#perguntas-frequentes)
+Complete Arduino library for the PB7200P80 Battery Management System (BMS) AFE chip.
 
 ---
 
-## Introdução
+## Table of Contents
 
-A biblioteca **PB7200P80** fornece uma interface completa e fácil de usar para comunicação com o chip PB7200P80, um AFE (Analog Front End) para sistemas de gerenciamento de baterias (BMS).
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+3. [Hardware Connections](#hardware-connections)
+4. [Quick Start](#quick-start)
+5. [API Reference](#api-reference)
+6. [Usage Examples](#usage-examples)
+7. [Protection Configuration](#protection-configuration)
+8. [Cell Balancing](#cell-balancing)
+9. [Troubleshooting](#troubleshooting)
+10. [FAQ](#faq)
 
-### Características Principais
+---
 
-✓ **Monitoramento de Células**: Leitura precisa de até 20 células em série  
-✓ **Medição de Temperatura**: Suporte para até 8 sensores de temperatura  
-✓ **Medição de Corrente**: Leitura de corrente de carga/descarga  
-✓ **Proteções Configuráveis**: Sobretensão, subtensão, sobrecorrente, sobretemperatura  
-✓ **Balanceamento de Células**: Manual e automático  
-✓ **Interface I2C**: Comunicação simples e confiável  
-✓ **Funções de Diagnóstico**: Ferramentas para debug e validação  
+## Introduction
 
-### Compatibilidade
+The **PB7200P80** library provides a complete and easy-to-use interface for communication with the PB7200P80 chip, an AFE (Analog Front End) for Battery Management Systems (BMS).
 
-- **Plataformas**: Arduino Uno, Nano, Mega, ESP32, ESP8266, STM32
+### Main Features
+
+✓ **Cell Monitoring**: Precise reading of up to 20 cells in series  
+✓ **Temperature Measurement**: Support for up to 8 temperature sensors  
+✓ **Current Measurement**: Charge/discharge current reading  
+✓ **Configurable Protections**: Overvoltage, undervoltage, overcurrent, overtemperature  
+✓ **Cell Balancing**: Manual and automatic  
+✓ **I2C Interface**: Simple and reliable communication  
+✓ **Diagnostic Functions**: Tools for debugging and validation  
+
+### Compatibility
+
+- **Platforms**: Arduino Uno, Nano, Mega, ESP32, ESP8266, STM32
 - **IDE**: Arduino IDE 1.8+, PlatformIO
-- **Comunicação**: I2C (UART em desenvolvimento)
+- **Communication**: I2C (UART in development)
 
 ---
 
-## Instalação
+## Installation
 
-### Método 1: Instalação Manual
+### Method 1: Manual Installation
 
-1. Baixe a biblioteca ou copie a pasta `PB7200P80` para:
+1. Download the library or copy the `PB7200P80` folder to:
    - Windows: `Documents\Arduino\libraries\`
    - Mac: `~/Documents/Arduino/libraries/`
    - Linux: `~/Arduino/libraries/`
 
-2. Reinicie o Arduino IDE
+2. Restart Arduino IDE
 
-3. Verifique em **Sketch → Include Library** se `PB7200P80` aparece na lista
+3. Check if `PB7200P80` appears in **Sketch → Include Library**
 
-### Método 2: PlatformIO
+### Method 2: PlatformIO
 
-Adicione ao seu `platformio.ini`:
+Add to your `platformio.ini`:
 
 ```ini
 lib_deps = 
@@ -64,29 +66,22 @@ lib_deps =
     PB7200P80
 ```
 
-### Método 3: Arduino Library Manager (quando publicada)
-
-1. Abra Arduino IDE
-2. Vá em **Sketch → Include Library → Manage Libraries**
-3. Procure por "PB7200P80"
-4. Clique em **Install**
-
 ---
 
-## Conexões de Hardware
+## Hardware Connections
 
-### Conexão I2C Básica
+### Basic I2C Connection
 
 ```
 PB7200P80          Arduino Uno/Nano
 ---------          ----------------
-VCC      ────────  3.3V ou 5V
+VCC      ────────  3.3V or 5V
 GND      ────────  GND
 SDA      ────────  A4 (SDA)
 SCL      ────────  A5 (SCL)
 ```
 
-### Conexão em ESP32
+### ESP32 Connection
 
 ```
 PB7200P80          ESP32
@@ -97,42 +92,42 @@ SDA      ────────  GPIO21 (SDA)
 SCL      ────────  GPIO22 (SCL)
 ```
 
-### Notas Importantes
+### Important Notes
 
-⚠ **Tensão de Operação**: Verifique se o PB7200P80 suporta 5V ou apenas 3.3V  
-⚠ **Pull-ups**: A maioria das placas Arduino possui resistores pull-up internos. Se necessário, adicione resistores de 4.7kΩ entre SDA/SCL e VCC  
-⚠ **Comprimento do Cabo**: Mantenha cabos I2C curtos (< 30cm) para evitar problemas de comunicação  
+⚠ **Operating Voltage**: Check if PB7200P80 supports 5V or only 3.3V  
+⚠ **Pull-ups**: Most Arduino boards have internal pull-up resistors. If needed, add 4.7kΩ resistors between SDA/SCL and VCC  
+⚠ **Cable Length**: Keep I2C cables short (< 30cm) to avoid communication issues  
 
 ---
 
-## Início Rápido
+## Quick Start
 
-### Exemplo Mínimo
+### Minimal Example
 
 ```cpp
 #include <PB7200P80.h>
 
-// Cria objeto BMS
+// Create BMS object
 PB7200P80 bms;
 
 void setup() {
   Serial.begin(115200);
   
-  // Inicializa BMS com 4 células
+  // Initialize BMS with 4 cells
   if (!bms.begin(4)) {
-    Serial.println("Erro ao inicializar BMS!");
+    Serial.println("Error initializing BMS!");
     while(1);
   }
   
-  Serial.println("BMS inicializado!");
+  Serial.println("BMS initialized!");
 }
 
 void loop() {
-  // Atualiza todas as leituras
+  // Update all readings
   bms.update();
   
-  // Exibe tensão total
-  Serial.print("Tensão do Pack: ");
+  // Display total voltage
+  Serial.print("Pack Voltage: ");
   Serial.print(bms.getTotalVoltage());
   Serial.println(" V");
   
@@ -140,472 +135,163 @@ void loop() {
 }
 ```
 
-### Leitura de Células Individuais
-
-```cpp
-void loop() {
-  // Lê tensão de cada célula
-  for (uint8_t i = 0; i < 4; i++) {
-    float voltage = bms.getCellVoltage(i);
-    Serial.print("Célula ");
-    Serial.print(i + 1);
-    Serial.print(": ");
-    Serial.print(voltage, 3);
-    Serial.println(" V");
-  }
-  
-  delay(2000);
-}
-```
-
 ---
 
-## Referência da API
+## API Reference
 
-### Inicialização
-
-#### `PB7200P80()`
-```cpp
-PB7200P80 bms;  // Construtor padrão (I2C, endereço 0x55)
-```
+### Initialization
 
 #### `begin()`
 ```cpp
 bool begin(uint8_t cellCount)
 ```
-Inicializa a comunicação com o PB7200P80.
+Initialize communication with PB7200P80.
 
-**Parâmetros:**
-- `cellCount`: Número de células conectadas (1-20)
+**Parameters:**
+- `cellCount`: Number of connected cells (1-20)
 
-**Retorno:** `true` se inicializado com sucesso
+**Returns:** `true` if successfully initialized
 
-**Exemplo:**
-```cpp
-if (!bms.begin(4)) {
-  Serial.println("Falha na inicialização!");
-}
-```
-
----
-
-### Leitura de Tensões
+### Voltage Reading
 
 #### `getCellVoltage()`
 ```cpp
 float getCellVoltage(uint8_t cellIndex)
 ```
-Lê a tensão de uma célula específica.
+Read voltage of a specific cell.
 
-**Parâmetros:**
-- `cellIndex`: Índice da célula (0-19)
-
-**Retorno:** Tensão em volts
-
-**Exemplo:**
-```cpp
-float v1 = bms.getCellVoltage(0);  // Primeira célula
-```
-
-#### `getAllCellVoltages()`
-```cpp
-bool getAllCellVoltages(float *voltages, uint8_t count)
-```
-Lê todas as tensões de uma vez (mais eficiente).
-
-**Parâmetros:**
-- `voltages`: Array para armazenar as tensões
-- `count`: Número de células a ler
-
-**Retorno:** `true` se sucesso
-
-**Exemplo:**
-```cpp
-float voltages[4];
-if (bms.getAllCellVoltages(voltages, 4)) {
-  for (int i = 0; i < 4; i++) {
-    Serial.println(voltages[i]);
-  }
-}
-```
+**Returns:** Voltage in volts
 
 #### `getTotalVoltage()`
 ```cpp
 float getTotalVoltage()
 ```
-Retorna a soma de todas as tensões das células.
+Returns the sum of all cell voltages.
 
-**Exemplo:**
-```cpp
-float totalV = bms.getTotalVoltage();
-Serial.print("Pack: ");
-Serial.print(totalV);
-Serial.println(" V");
-```
-
-#### `getMaxCellVoltage()`
-```cpp
-float getMaxCellVoltage()
-```
-Retorna a maior tensão entre as células.
-
-#### `getMinCellVoltage()`
-```cpp
-float getMinCellVoltage()
-```
-Retorna a menor tensão entre as células.
+#### `getMaxCellVoltage()` / `getMinCellVoltage()`
+Returns maximum/minimum cell voltage.
 
 #### `getVoltageDelta()`
 ```cpp
 float getVoltageDelta()
 ```
-Retorna a diferença entre a maior e menor tensão.
+Returns difference between max and min voltage.
 
-**Exemplo:**
-```cpp
-float delta = bms.getVoltageDelta();
-Serial.print("Delta: ");
-Serial.print(delta * 1000);  // Converte para mV
-Serial.println(" mV");
-```
-
----
-
-### Leitura de Temperaturas
+### Temperature Reading
 
 #### `getTemperature()`
 ```cpp
 float getTemperature(uint8_t tempIndex)
 ```
-Lê a temperatura de um sensor específico.
+Read temperature from specific sensor (0-7).
 
-**Parâmetros:**
-- `tempIndex`: Índice do sensor (0-7)
+**Returns:** Temperature in °C
 
-**Retorno:** Temperatura em °C
-
-**Exemplo:**
-```cpp
-float temp1 = bms.getTemperature(0);
-Serial.print("Temperatura: ");
-Serial.print(temp1);
-Serial.println(" °C");
-```
-
-#### `getAllTemperatures()`
-```cpp
-bool getAllTemperatures(float *temperatures, uint8_t count)
-```
-Lê todas as temperaturas de uma vez.
-
-#### `getMaxTemperature()`
-```cpp
-float getMaxTemperature()
-```
-Retorna a temperatura máxima detectada.
-
-#### `getMinTemperature()`
-```cpp
-float getMinTemperature()
-```
-Retorna a temperatura mínima detectada.
-
----
-
-### Leitura de Corrente e Potência
+### Current and Power
 
 #### `getCurrent()`
 ```cpp
 float getCurrent()
 ```
-Lê a corrente do pack.
-
-**Retorno:** Corrente em amperes (positivo = carga, negativo = descarga)
-
-**Exemplo:**
-```cpp
-float current = bms.getCurrent();
-if (current > 0) {
-  Serial.println("Carregando");
-} else if (current < 0) {
-  Serial.println("Descarregando");
-}
-```
+Read pack current (positive = charging, negative = discharging).
 
 #### `getPower()`
 ```cpp
 float getPower()
 ```
-Retorna a potência calculada (tensão × corrente).
+Returns calculated power (voltage × current) in watts.
 
-**Retorno:** Potência em watts
-
----
-
-### Status e Proteções
-
-#### `getStatus()`
-```cpp
-uint8_t getStatus()
-```
-Lê o registro de status do dispositivo.
-
-#### `getFaultStatus()`
-```cpp
-uint8_t getFaultStatus()
-```
-Lê o registro de falhas.
+### Status and Protections
 
 #### `isOverVoltage()`
-```cpp
-bool isOverVoltage()
-```
-Verifica se há sobretensão detectada.
-
-**Exemplo:**
-```cpp
-if (bms.isOverVoltage()) {
-  Serial.println("ALERTA: Sobretensão!");
-  // Desconectar carga/carregador
-}
-```
+Check for overvoltage condition.
 
 #### `isUnderVoltage()`
-```cpp
-bool isUnderVoltage()
-```
-Verifica se há subtensão detectada.
+Check for undervoltage condition.
 
 #### `isOverCurrent()`
-```cpp
-bool isOverCurrent()
-```
-Verifica se há sobrecorrente detectada.
+Check for overcurrent condition.
 
 #### `isOverTemperature()`
-```cpp
-bool isOverTemperature()
-```
-Verifica se há sobretemperatura detectada.
-
-#### `isUnderTemperature()`
-```cpp
-bool isUnderTemperature()
-```
-Verifica se há subtemperatura detectada.
+Check for overtemperature condition.
 
 #### `clearFaults()`
-```cpp
-bool clearFaults()
-```
-Limpa todas as flags de falha.
+Clear all fault flags.
 
----
-
-### Balanceamento de Células
+### Cell Balancing
 
 #### `setBalancing()`
 ```cpp
 bool setBalancing(uint8_t cellIndex, bool enable)
 ```
-Habilita ou desabilita balanceamento de uma célula.
-
-**Parâmetros:**
-- `cellIndex`: Índice da célula
-- `enable`: `true` para habilitar, `false` para desabilitar
-
-**Exemplo:**
-```cpp
-// Habilita balanceamento da célula 2
-bms.setBalancing(1, true);
-```
+Enable/disable balancing for a specific cell.
 
 #### `setAutoBalancing()`
 ```cpp
-bool setAutoBalancing(bool enable, uint16_t threshold)
+bool setAutoBalancing(bool enable, uint16_t threshold = 50)
 ```
-Habilita balanceamento automático.
-
-**Parâmetros:**
-- `enable`: `true` para habilitar
-- `threshold`: Diferença de tensão em mV para iniciar balanceamento (padrão: 50mV)
-
-**Exemplo:**
-```cpp
-// Balancear automaticamente se diferença > 50mV
-bms.setAutoBalancing(true, 50);
-```
+Enable automatic balancing with voltage threshold (mV).
 
 #### `isBalancing()`
-```cpp
-bool isBalancing(uint8_t cellIndex)
-```
-Verifica se uma célula está sendo balanceada.
+Check if a cell is being balanced.
 
-#### `stopAllBalancing()`
-```cpp
-bool stopAllBalancing()
-```
-Desabilita balanceamento de todas as células.
-
----
-
-### Configuração de Proteções
+### Configuration
 
 #### `setProtectionConfig()`
 ```cpp
 bool setProtectionConfig(const ProtectionConfig &config)
 ```
-Configura os limites de proteção.
+Configure protection limits.
 
-**Exemplo:**
+**Example:**
 ```cpp
 ProtectionConfig config;
-config.overVoltageThreshold = 4.25;     // 4.25V por célula
-config.underVoltageThreshold = 2.80;    // 2.80V por célula
+config.overVoltageThreshold = 4.25;     // 4.25V per cell
+config.underVoltageThreshold = 2.80;    // 2.80V per cell
 config.overCurrentThreshold = 10.0;     // 10A
 config.overTempThreshold = 60.0;        // 60°C
-config.underTempThreshold = -10.0;      // -10°C
-
-if (bms.setProtectionConfig(config)) {
-  Serial.println("Proteções configuradas!");
-}
+bms.setProtectionConfig(config);
 ```
 
-#### `getProtectionConfig()`
-```cpp
-bool getProtectionConfig(ProtectionConfig &config)
-```
-Lê as configurações atuais de proteção.
-
----
-
-### Modos de Operação
-
-#### `setMode()`
-```cpp
-bool setMode(PB7200_Mode mode)
-```
-Define o modo de operação.
-
-**Modos disponíveis:**
-- `PB7200_MODE_NORMAL`: Modo normal de operação
-- `PB7200_MODE_SLEEP`: Modo de baixo consumo
-- `PB7200_MODE_SHUTDOWN`: Desligamento
-
-#### `sleep()`
-```cpp
-bool sleep()
-```
-Entra em modo sleep.
-
-#### `wakeup()`
-```cpp
-bool wakeup()
-```
-Acorda do modo sleep.
-
-#### `reset()`
-```cpp
-bool reset()
-```
-Reinicia o dispositivo.
-
----
-
-### Estatísticas
+### Statistics
 
 #### `getPackStats()`
 ```cpp
 bool getPackStats(PackStats &stats)
 ```
-Obtém estatísticas completas do pack em uma única chamada.
+Get complete pack statistics in a single call.
 
-**Exemplo:**
-```cpp
-PackStats stats;
-if (bms.getPackStats(stats)) {
-  Serial.print("Tensão Total: ");
-  Serial.println(stats.totalVoltage);
-  Serial.print("Célula mais alta: ");
-  Serial.println(stats.maxCellIndex + 1);
-  Serial.print("Delta: ");
-  Serial.print(stats.voltageDelta * 1000);
-  Serial.println(" mV");
-}
-```
-
-**Campos de PackStats:**
-- `totalVoltage`: Tensão total do pack
-- `maxCellVoltage`: Maior tensão de célula
-- `minCellVoltage`: Menor tensão de célula
-- `avgCellVoltage`: Tensão média
-- `voltageDelta`: Diferença max-min
-- `maxCellIndex`: Índice da célula com maior tensão
-- `minCellIndex`: Índice da célula com menor tensão
-- `current`: Corrente atual
-- `power`: Potência
-- `maxTemp`: Temperatura máxima
-- `minTemp`: Temperatura mínima
+**Fields:**
+- `totalVoltage`: Total pack voltage
+- `maxCellVoltage`: Maximum cell voltage
+- `minCellVoltage`: Minimum cell voltage
+- `voltageDelta`: Max-min difference
+- `current`: Current
+- `power`: Power
+- `maxTemp`: Maximum temperature
 
 #### `update()`
 ```cpp
 bool update()
 ```
-Atualiza todas as leituras de uma vez (otimizado).
+Update all readings at once (optimized).
 
-**Exemplo:**
-```cpp
-void loop() {
-  bms.update();  // Atualiza tudo
-  
-  // Agora pode acessar valores cached
-  float v = bms.getTotalVoltage();
-  float i = bms.getCurrent();
-  
-  delay(1000);
-}
-```
-
----
-
-### Funções de Diagnóstico
+### Diagnostic Functions
 
 #### `selfTest()`
-```cpp
-bool selfTest()
-```
-Executa autoteste e imprime resultados no Serial.
+Run self-test and print results.
 
 #### `printDiagnostics()`
-```cpp
-void printDiagnostics()
-```
-Imprime informações completas de diagnóstico.
+Print complete diagnostic information.
 
 #### `printCellVoltages()`
-```cpp
-void printCellVoltages()
-```
-Imprime todas as tensões das células formatadas.
-
-#### `printTemperatures()`
-```cpp
-void printTemperatures()
-```
-Imprime todas as temperaturas formatadas.
-
-#### `printStatus()`
-```cpp
-void printStatus()
-```
-Imprime status de proteções e alertas.
+Print all cell voltages formatted.
 
 ---
 
-## Exemplos de Uso
+## Usage Examples
 
-### Exemplo 1: Monitor Serial Simples
+### Example 1: Simple Serial Monitor
 
 ```cpp
 #include <PB7200P80.h>
@@ -632,96 +318,61 @@ void loop() {
 }
 ```
 
-### Exemplo 2: Monitoramento com Alertas
+### Example 2: Monitoring with Alerts
 
 ```cpp
-#include <PB7200P80.h>
-
-PB7200P80 bms;
-
-void setup() {
-  Serial.begin(115200);
-  if (!bms.begin(4)) {
-    Serial.println("ERRO: BMS não inicializado!");
-    while(1);
-  }
-}
-
 void loop() {
   bms.update();
   
-  // Verifica alertas críticos
+  // Check critical alerts
   if (bms.isOverVoltage()) {
-    Serial.println("⚠ ALERTA: SOBRETENSÃO!");
-    // Ação: desconectar carregador
+    Serial.println("⚠ ALERT: OVERVOLTAGE!");
+    // Action: disconnect charger
   }
   
   if (bms.isUnderVoltage()) {
-    Serial.println("⚠ ALERTA: SUBTENSÃO!");
-    // Ação: desconectar carga
+    Serial.println("⚠ ALERT: UNDERVOLTAGE!");
+    // Action: disconnect load
   }
   
   if (bms.isOverTemperature()) {
-    Serial.println("⚠ ALERTA: TEMPERATURA ALTA!");
-    // Ação: reduzir corrente ou desligar
+    Serial.println("⚠ ALERT: HIGH TEMPERATURE!");
+    // Action: reduce current or shut down
   }
   
-  // Mostra delta de tensão
+  // Show voltage delta
   float delta = bms.getVoltageDelta() * 1000;
   if (delta > 100) {  // > 100mV
-    Serial.print("⚠ Delta alto: ");
+    Serial.print("⚠ High delta: ");
     Serial.print(delta);
-    Serial.println(" mV - Considere balancear");
+    Serial.println(" mV - Consider balancing");
   }
   
   delay(2000);
 }
 ```
 
-### Exemplo 3: Controle de Relés de Proteção
+### Example 3: Protection Relay Control
 
 ```cpp
-#include <PB7200P80.h>
-
-PB7200P80 bms;
-
 const int CHARGE_RELAY_PIN = 7;
 const int DISCHARGE_RELAY_PIN = 8;
-
-void setup() {
-  Serial.begin(115200);
-  
-  pinMode(CHARGE_RELAY_PIN, OUTPUT);
-  pinMode(DISCHARGE_RELAY_PIN, OUTPUT);
-  
-  bms.begin(4);
-  
-  // Configura proteções
-  ProtectionConfig config;
-  config.overVoltageThreshold = 4.20;
-  config.underVoltageThreshold = 3.00;
-  config.overCurrentThreshold = 15.0;
-  config.overTempThreshold = 55.0;
-  bms.setProtectionConfig(config);
-}
 
 void loop() {
   bms.update();
   
-  // Controle de relé de carga
+  // Charge relay control
   if (bms.isOverVoltage() || bms.isOverTemperature()) {
-    digitalWrite(CHARGE_RELAY_PIN, LOW);  // Desliga carregador
-    Serial.println("Carregador desligado");
+    digitalWrite(CHARGE_RELAY_PIN, LOW);  // Turn off charger
   } else {
-    digitalWrite(CHARGE_RELAY_PIN, HIGH);  // Permite carregar
+    digitalWrite(CHARGE_RELAY_PIN, HIGH);  // Allow charging
   }
   
-  // Controle de relé de descarga
+  // Discharge relay control
   if (bms.isUnderVoltage() || bms.isOverCurrent()) {
-    digitalWrite(DISCHARGE_RELAY_PIN, LOW);  // Desconecta carga
-    Serial.println("Descarga bloqueada");
+    digitalWrite(DISCHARGE_RELAY_PIN, LOW);  // Block discharge
   } else {
-    digitalWrite(DISCHARGE_RELAY_PIN, HIGH);  // Permite descarregar
+    digitalWrite(DISCHARGE_RELAY_PIN, HIGH);  // Allow discharge
   }
   
   delay(500);
@@ -730,17 +381,17 @@ void loop() {
 
 ---
 
-## Configuração de Proteções
+## Protection Configuration
 
-### Proteções para Baterias Li-ion (18650)
+### Li-ion Battery Protection (18650)
 
 ```cpp
 ProtectionConfig liionConfig = {
-  .overVoltageThreshold = 4.25,      // Máximo seguro
-  .underVoltageThreshold = 2.80,     // Mínimo seguro
-  .overCurrentThreshold = 10.0,      // Depende da célula
-  .overTempThreshold = 60.0,         // Limite de temperatura
-  .underTempThreshold = 0.0,         // Não carregar abaixo de 0°C
+  .overVoltageThreshold = 4.25,      // Safe maximum
+  .underVoltageThreshold = 2.80,     // Safe minimum
+  .overCurrentThreshold = 10.0,      // Depends on cell
+  .overTempThreshold = 60.0,         // Temperature limit
+  .underTempThreshold = 0.0,         // Don't charge below 0°C
   .overVoltageDelay = 100,
   .underVoltageDelay = 100,
   .overCurrentDelay = 50
@@ -749,15 +400,15 @@ ProtectionConfig liionConfig = {
 bms.setProtectionConfig(liionConfig);
 ```
 
-### Proteções para Baterias LiFePO4
+### LiFePO4 Battery Protection
 
 ```cpp
 ProtectionConfig lifepo4Config = {
-  .overVoltageThreshold = 3.65,      // Máximo para LiFePO4
-  .underVoltageThreshold = 2.50,     // Mínimo para LiFePO4
-  .overCurrentThreshold = 20.0,      // LiFePO4 aguenta mais corrente
+  .overVoltageThreshold = 3.65,      // Maximum for LiFePO4
+  .underVoltageThreshold = 2.50,     // Minimum for LiFePO4
+  .overCurrentThreshold = 20.0,      // LiFePO4 handles more current
   .overTempThreshold = 60.0,
-  .underTempThreshold = -20.0,       // LiFePO4 mais tolerante ao frio
+  .underTempThreshold = -20.0,       // LiFePO4 more cold-tolerant
   .overVoltageDelay = 100,
   .underVoltageDelay = 100,
   .overCurrentDelay = 50
@@ -768,37 +419,37 @@ bms.setProtectionConfig(lifepo4Config);
 
 ---
 
-## Balanceamento de Células
+## Cell Balancing
 
-### Quando Balancear?
+### When to Balance?
 
-Balanceamento é necessário quando há diferença significativa entre as tensões das células:
+Balancing is necessary when there's significant difference between cell voltages:
 
-- **Diferença < 30mV**: Células bem balanceadas, não requer ação
-- **Diferença 30-50mV**: Recomendado balanceamento durante carga
-- **Diferença > 50mV**: Balanceamento necessário
-- **Diferença > 100mV**: Balanceamento urgente, investigar células fracas
+- **Difference < 30mV**: Well-balanced cells, no action required
+- **Difference 30-50mV**: Balancing recommended during charge
+- **Difference > 50mV**: Balancing necessary
+- **Difference > 100mV**: Urgent balancing, investigate weak cells
 
-### Balanceamento Automático
+### Automatic Balancing
 
 ```cpp
 void setup() {
   bms.begin(4);
   
-  // Ativa balanceamento automático
-  // Limiar de 50mV
+  // Activate automatic balancing
+  // 50mV threshold
   bms.setAutoBalancing(true, 50);
 }
 
 void loop() {
   bms.update();
   
-  // Monitora progresso
+  // Monitor progress
   for (uint8_t i = 0; i < 4; i++) {
     if (bms.isBalancing(i)) {
-      Serial.print("Célula ");
+      Serial.print("Cell ");
       Serial.print(i + 1);
-      Serial.println(" balanceando...");
+      Serial.println(" balancing...");
     }
   }
   
@@ -806,253 +457,136 @@ void loop() {
 }
 ```
 
-### Balanceamento Manual
-
-```cpp
-void balanceHighestCell() {
-  bms.update();
-  
-  // Encontra célula com maior tensão
-  float maxV = 0;
-  uint8_t maxIndex = 0;
-  
-  for (uint8_t i = 0; i < 4; i++) {
-    float v = bms.getCellVoltage(i);
-    if (v > maxV) {
-      maxV = v;
-      maxIndex = i;
-    }
-  }
-  
-  // Balanceia apenas a célula mais alta
-  for (uint8_t i = 0; i < 4; i++) {
-    bms.setBalancing(i, (i == maxIndex));
-  }
-  
-  Serial.print("Balanceando célula ");
-  Serial.println(maxIndex + 1);
-}
-```
-
 ---
 
-## Solução de Problemas
+## Troubleshooting
 
-### Problema: BMS não inicializa
+### Problem: BMS doesn't initialize
 
-**Sintomas:** `begin()` retorna `false`
+**Symptoms:** `begin()` returns `false`
 
-**Soluções:**
-1. Verifique conexões I2C (SDA/SCL)
-2. Confirme alimentação do PB7200P80
-3. Teste endereço I2C:
+**Solutions:**
+1. Check I2C connections (SDA/SCL)
+2. Confirm PB7200P80 power supply
+3. Test I2C address:
 ```cpp
 Wire.begin();
 Wire.beginTransmission(0x55);
 byte error = Wire.endTransmission();
 if (error == 0) {
-  Serial.println("Dispositivo encontrado!");
+  Serial.println("Device found!");
 }
 ```
-4. Adicione resistores pull-up de 4.7kΩ em SDA e SCL
-5. Reduza velocidade I2C:
+4. Add 4.7kΩ pull-up resistors on SDA and SCL
+5. Reduce I2C speed:
 ```cpp
-Wire.setClock(50000);  // 50kHz em vez de 100kHz
+Wire.setClock(50000);  // 50kHz instead of 100kHz
 ```
 
-### Problema: Leituras de tensão erradas
+### Problem: Wrong voltage readings
 
-**Sintomas:** Tensões 0V ou valores absurdos
+**Symptoms:** 0V voltages or absurd values
 
-**Soluções:**
-1. Verifique se células estão conectadas ao PB7200P80
-2. Confirme número de células no `begin()`:
+**Solutions:**
+1. Check if cells are connected to PB7200P80
+2. Confirm number of cells in `begin()`:
 ```cpp
-bms.begin(4);  // Deve corresponder ao número real
+bms.begin(4);  // Must match actual number
 ```
-3. Execute diagnóstico:
+3. Run diagnostics:
 ```cpp
 bms.printDiagnostics();
 ```
-4. Verifique se célula está com falha (multímetro)
+4. Check if cell is faulty (multimeter)
 
-### Problema: Comunicação I2C instável
+### Problem: Unstable I2C communication
 
-**Sintomas:** Leituras intermitentes, travamentos
+**Symptoms:** Intermittent readings, lockups
 
-**Soluções:**
-1. Encurte cabos I2C (< 20cm ideal)
-2. Adicione capacitor de 100nF entre VCC e GND próximo ao PB7200P80
-3. Use cabos blindados para I2C
-4. Evite rotas próximas a fontes de ruído (motores, PWM)
-5. Adicione pequeno delay entre leituras:
+**Solutions:**
+1. Shorten I2C cables (< 20cm ideal)
+2. Add 100nF capacitor between VCC and GND near PB7200P80
+3. Use shielded cables for I2C
+4. Avoid routes near noise sources (motors, PWM)
+5. Add small delay between readings:
 ```cpp
 bms.update();
 delay(50);
 ```
 
-### Problema: Balanceamento não funciona
-
-**Sintomas:** Células não balanceiam mesmo com diferença alta
-
-**Soluções:**
-1. Verifique se balanceamento está habilitado:
-```cpp
-if (!bms.isBalancing(0)) {
-  bms.setBalancing(0, true);
-}
-```
-2. Confirme que células estão carregadas (balanceamento só ocorre em tensão alta)
-3. Verifique corrente de balanceamento do PB7200P80 (geralmente 50-100mA)
-4. Balanceamento é lento, pode levar horas para equilibrar
-
-### Problema: Proteções disparando incorretamente
-
-**Sintomas:** Alertas falsos de sobretensão/subtensão
-
-**Soluções:**
-1. Revise limites de proteção:
-```cpp
-ProtectionConfig config;
-bms.getProtectionConfig(config);
-Serial.println(config.overVoltageThreshold);
-```
-2. Ajuste limites conforme tipo de bateria
-3. Aumente delays de proteção para evitar falsos positivos
-4. Verifique se sensores de temperatura estão conectados corretamente
-
 ---
 
-## Perguntas Frequentes
+## FAQ
 
-### Q: Quantas células posso monitorar?
+### Q: How many cells can I monitor?
 
-**R:** O PB7200P80 suporta até 20 células em série. A biblioteca suporta de 1 a 20 células.
+**A:** PB7200P80 supports up to 20 cells in series. The library supports 1 to 20 cells.
 
-### Q: Posso usar com ESP32/ESP8266?
+### Q: Can I use with ESP32/ESP8266?
 
-**R:** Sim! A biblioteca é compatível. No ESP32, use os pinos I2C padrão (GPIO21/22) ou configure outros pinos:
+**A:** Yes! The library is compatible. On ESP32, use default I2C pins (GPIO21/22) or configure others:
 ```cpp
 Wire.begin(SDA_PIN, SCL_PIN);
 bms.begin(4);
 ```
 
-### Q: Como calibro as leituras de tensão?
+### Q: Does balancing completely drain cells?
 
-**R:** As leituras dependem da precisão do PB7200P80 e sua calibração de fábrica. Se necessário, você pode adicionar um fator de correção:
-```cpp
-float voltage = bms.getCellVoltage(0);
-float calibrated = voltage * 1.02;  // Ajuste conforme necessário
-```
+**A:** No. Balancing only dissipates energy from higher cells to equal the lower ones. It's a passive process using resistors.
 
-### Q: O balanceamento drena as células completamente?
+### Q: Can I use in 24V/48V system?
 
-**R:** Não. O balanceamento apenas dissipa energia das células mais altas até igualar com as mais baixas. É um processo passivo que usa resistores.
+**A:** Yes, as long as the number of series cells is compatible:
+- 24V: ~6-7 Li-ion cells (6S)
+- 48V: ~13-14 Li-ion cells (13S)
 
-### Q: Posso usar em sistema 24V/48V?
+### Q: Memory consumption of library?
 
-**R:** Sim, desde que o número de células em série seja compatível:
-- 24V: ~6-7 células Li-ion (6S)
-- 48V: ~13-14 células Li-ion (13S)
-
-### Q: Preciso de proteção externa (BMS físico)?
-
-**R:** O PB7200P80 é um AFE (Analog Front End) e monitora, mas pode não controlar MOSFETs de proteção. Consulte o datasheet do chip para confirmar se inclui controle de MOSFETs ou se você precisa adicionar circuito externo.
-
-### Q: Como faço logging de dados?
-
-**R:** Exemplo com SD card:
-```cpp
-#include <SD.h>
-
-void loop() {
-  bms.update();
-  
-  File dataFile = SD.open("bms_log.csv", FILE_WRITE);
-  if (dataFile) {
-    dataFile.print(millis());
-    dataFile.print(",");
-    dataFile.print(bms.getTotalVoltage());
-    dataFile.print(",");
-    dataFile.println(bms.getCurrent());
-    dataFile.close();
-  }
-  
-  delay(10000);  // Log a cada 10s
-}
-```
-
-### Q: A biblioteca suporta UART?
-
-**R:** Atualmente apenas I2C está implementado. Suporte UART está planejado para versões futuras.
-
-### Q: Consumo de memória da biblioteca?
-
-**R:** A biblioteca usa aproximadamente:
+**A:** The library uses approximately:
 - Flash: ~8KB
 - RAM: ~250 bytes
 
-Compatível com Arduino Uno e placas similares.
+Compatible with Arduino Uno and similar boards.
 
 ---
 
 ## Changelog
 
-### Versão 1.0.0 (2025-10-04)
-- Release inicial
-- Suporte I2C completo
-- Monitoramento de até 20 células
-- 8 sensores de temperatura
-- Balanceamento manual e automático
-- Proteções configuráveis
-- Exemplos completos
+### Version 1.0.0 (2025-10-04)
+- Initial release
+- Complete I2C support
+- Monitoring of up to 20 cells
+- 8 temperature sensors
+- Manual and automatic balancing
+- Configurable protections
+- Complete examples
 
 ---
 
-## Suporte e Contribuições
+## License
 
-### Reportar Bugs
-
-Se encontrar um problema, por favor reporte com:
-- Versão da biblioteca
-- Plataforma (Arduino Uno, ESP32, etc.)
-- Código mínimo para reproduzir o problema
-- Mensagens de erro
-
-### Contribuir
-
-Contribuições são bem-vindas! Por favor:
-1. Fork o repositório
-2. Crie uma branch para sua feature
-3. Commit suas mudanças
-4. Envie um Pull Request
+This library is distributed under the MIT license. See LICENSE file for details.
 
 ---
 
-## Licença
+## Author
 
-Esta biblioteca é distribuída sob licença MIT. Veja arquivo LICENSE para detalhes.
-
----
-
-## Autor
-
-Biblioteca PB7200P80  
-Versão 1.0.0  
-Data: 04/10/2025
+PB7200P80 Library  
+Version 1.0.0  
+Date: 10/04/2025
 
 ---
 
-## Avisos Legais
+## Legal Notices
 
-⚠ **ATENÇÃO**: Baterias de lítio podem ser perigosas se mal gerenciadas. Esta biblioteca é fornecida "como está" sem garantias. O autor não se responsabiliza por danos causados pelo uso desta biblioteca.
+⚠ **WARNING**: Lithium batteries can be dangerous if mismanaged. This library is provided "as is" without warranties. The author is not responsible for damages caused by using this library.
 
-✓ Sempre use proteções adequadas em sistemas de baterias  
-✓ Monitore temperatura constantemente  
-✓ Use circuitos de proteção redundantes em aplicações críticas  
-✓ Consulte especialistas para aplicações comerciais  
-✓ Siga regulamentos locais sobre baterias de lítio  
+✓ Always use adequate protections in battery systems  
+✓ Monitor temperature constantly  
+✓ Use redundant protection circuits in critical applications  
+✓ Consult experts for commercial applications  
+✓ Follow local regulations about lithium batteries  
 
 ---
 
-**Bom uso da biblioteca PB7200P80!** 🔋⚡
+**Happy using the PB7200P80 library!** 🔋⚡

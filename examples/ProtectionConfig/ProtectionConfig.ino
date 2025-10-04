@@ -1,15 +1,15 @@
 /**
  * ProtectionConfig.ino
  * 
- * Exemplo de configuração de proteções do PB7200P80
+ * PB7200P80 protection configuration example
  * 
- * Este exemplo demonstra:
- * - Configuração de limites de proteção
- * - Leitura de configurações atuais
- * - Monitoramento de eventos de proteção
+ * This example demonstrates:
+ * - Protection limits configuration
+ * - Reading current settings
+ * - Monitoring protection events
  * 
- * AVISO: Ajuste os valores conforme as especificações
- *        do seu pack de baterias!
+ * WARNING: Adjust values according to your
+ *          battery pack specifications!
  */
 
 #include <PB7200P80.h>
@@ -18,17 +18,17 @@ PB7200P80 bms(PB7200_INTERFACE_I2C, 0x55);
 
 const uint8_t NUM_CELLS = 4;
 
-// Configurações de proteção para células Li-ion típicas
-// AJUSTE CONFORME SEU TIPO DE BATERIA!
+// Protection settings for typical Li-ion cells
+// ADJUST ACCORDING TO YOUR BATTERY TYPE!
 ProtectionConfig protection = {
-  .overVoltageThreshold = 4.25,      // Sobretensão em 4.25V
-  .underVoltageThreshold = 2.80,     // Subtensão em 2.80V
-  .overCurrentThreshold = 10.0,      // Sobrecorrente em 10A
-  .overTempThreshold = 60.0,         // Sobretemperatura em 60°C
-  .underTempThreshold = -10.0,       // Subtemperatura em -10°C
-  .overVoltageDelay = 100,           // Atraso de 100ms
-  .underVoltageDelay = 100,          // Atraso de 100ms
-  .overCurrentDelay = 50             // Atraso de 50ms
+  .overVoltageThreshold = 4.25,      // Overvoltage at 4.25V
+  .underVoltageThreshold = 2.80,     // Undervoltage at 2.80V
+  .overCurrentThreshold = 10.0,      // Overcurrent at 10A
+  .overTempThreshold = 60.0,         // Over-temperature at 60°C
+  .underTempThreshold = -10.0,       // Under-temperature at -10°C
+  .overVoltageDelay = 100,           // 100ms delay
+  .underVoltageDelay = 100,          // 100ms delay
+  .overCurrentDelay = 50             // 50ms delay
 };
 
 void setup() {
@@ -36,28 +36,28 @@ void setup() {
   while (!Serial) delay(10);
   
   Serial.println(F("==========================================="));
-  Serial.println(F("  PB7200P80 - Configuração de Proteções   "));
+  Serial.println(F("   PB7200P80 - Protection Configuration   "));
   Serial.println(F("==========================================="));
   Serial.println();
   
-  // Inicializa BMS
+  // Initialize BMS
   if (!bms.begin(NUM_CELLS)) {
-    Serial.println(F("ERRO: Falha ao inicializar PB7200P80!"));
+    Serial.println(F("ERROR: Failed to initialize PB7200P80!"));
     while (1) delay(1000);
   }
   
-  Serial.println(F("PB7200P80 inicializado!"));
+  Serial.println(F("PB7200P80 initialized!"));
   Serial.println();
   
-  // Lê configuração atual
-  Serial.println(F("Configuração ATUAL de Proteções:"));
+  // Read current configuration
+  Serial.println(F("CURRENT Protection Configuration:"));
   Serial.println(F("----------------------------------------"));
   displayProtectionConfig();
   Serial.println();
   
-  // Pergunta se deseja aplicar nova configuração
-  Serial.println(F("Deseja aplicar a NOVA configuração? (S/N)"));
-  Serial.println(F("(Digite 'S' nos próximos 10 segundos)"));
+  // Ask if user wants to apply new configuration
+  Serial.println(F("Do you want to apply the NEW configuration? (Y/N)"));
+  Serial.println(F("(Type 'Y' in the next 10 seconds)"));
   
   unsigned long startTime = millis();
   bool applyConfig = false;
@@ -65,7 +65,7 @@ void setup() {
   while (millis() - startTime < 10000) {
     if (Serial.available()) {
       char response = Serial.read();
-      if (response == 'S' || response == 's') {
+      if (response == 'Y' || response == 'y') {
         applyConfig = true;
         break;
       } else if (response == 'N' || response == 'n') {
@@ -76,33 +76,33 @@ void setup() {
   }
   
   if (applyConfig) {
-    Serial.println(F("\nAplicando nova configuração..."));
+    Serial.println(F("\nApplying new configuration..."));
     
     if (bms.setProtectionConfig(protection)) {
-      Serial.println(F("✓ Configuração aplicada com sucesso!"));
+      Serial.println(F("✓ Configuration applied successfully!"));
       delay(1000);
       
-      Serial.println(F("\nConfiguração NOVA:"));
+      Serial.println(F("\nNEW Configuration:"));
       Serial.println(F("----------------------------------------"));
       displayProtectionConfig();
     } else {
-      Serial.println(F("✗ ERRO ao aplicar configuração!"));
+      Serial.println(F("✗ ERROR applying configuration!"));
     }
   } else {
-    Serial.println(F("\nMantendo configuração atual."));
+    Serial.println(F("\nKeeping current configuration."));
   }
   
   Serial.println();
-  Serial.println(F("Iniciando monitoramento de proteções..."));
+  Serial.println(F("Starting protection monitoring..."));
   Serial.println();
   delay(2000);
 }
 
 void loop() {
-  // Atualiza leituras
+  // Update readings
   bms.update();
   
-  // Verifica proteções
+  // Check protections
   static bool lastOVP = false;
   static bool lastUVP = false;
   static bool lastOCP = false;
@@ -113,21 +113,21 @@ void loop() {
   bool ocp = bms.isOverCurrent();
   bool otp = bms.isOverTemperature();
   
-  // Detecta mudanças e alerta
+  // Detect changes and alert
   if (ovp && !lastOVP) {
-    Serial.println(F("\n⚠⚠⚠ ALERTA: SOBRETENSÃO DETECTADA! ⚠⚠⚠"));
+    Serial.println(F("\n⚠⚠⚠ ALERT: OVERVOLTAGE DETECTED! ⚠⚠⚠"));
     showProtectionDetails();
   }
   if (uvp && !lastUVP) {
-    Serial.println(F("\n⚠⚠⚠ ALERTA: SUBTENSÃO DETECTADA! ⚠⚠⚠"));
+    Serial.println(F("\n⚠⚠⚠ ALERT: UNDERVOLTAGE DETECTED! ⚠⚠⚠"));
     showProtectionDetails();
   }
   if (ocp && !lastOCP) {
-    Serial.println(F("\n⚠⚠⚠ ALERTA: SOBRECORRENTE DETECTADA! ⚠⚠⚠"));
+    Serial.println(F("\n⚠⚠⚠ ALERT: OVERCURRENT DETECTED! ⚠⚠⚠"));
     showProtectionDetails();
   }
   if (otp && !lastOTP) {
-    Serial.println(F("\n⚠⚠⚠ ALERTA: SOBRETEMPERATURA DETECTADA! ⚠⚠⚠"));
+    Serial.println(F("\n⚠⚠⚠ ALERT: OVER-TEMPERATURE DETECTED! ⚠⚠⚠"));
     showProtectionDetails();
   }
   
@@ -136,7 +136,7 @@ void loop() {
   lastOCP = ocp;
   lastOTP = otp;
   
-  // Display periódico
+  // Periodic display
   static unsigned long lastDisplay = 0;
   if (millis() - lastDisplay >= 5000) {
     lastDisplay = millis();
@@ -149,67 +149,67 @@ void loop() {
 void displayProtectionConfig() {
   ProtectionConfig config;
   if (bms.getProtectionConfig(config)) {
-    Serial.print(F("Sobretensão:      "));
+    Serial.print(F("Overvoltage:      "));
     Serial.print(config.overVoltageThreshold, 2);
     Serial.println(F(" V"));
     
-    Serial.print(F("Subtensão:        "));
+    Serial.print(F("Undervoltage:     "));
     Serial.print(config.underVoltageThreshold, 2);
     Serial.println(F(" V"));
     
-    Serial.print(F("Sobrecorrente:    "));
+    Serial.print(F("Overcurrent:      "));
     Serial.print(config.overCurrentThreshold, 1);
     Serial.println(F(" A"));
     
-    Serial.print(F("Sobretemperatura: "));
+    Serial.print(F("Over-temperature: "));
     Serial.print(config.overTempThreshold, 1);
     Serial.println(F(" °C"));
     
-    Serial.print(F("Subtemperatura:   "));
+    Serial.print(F("Under-temperature:"));
     Serial.print(config.underTempThreshold, 1);
     Serial.println(F(" °C"));
   } else {
-    Serial.println(F("ERRO ao ler configuração!"));
+    Serial.println(F("ERROR reading configuration!"));
   }
 }
 
 void displayMonitoring() {
   Serial.println(F("========================================"));
-  Serial.println(F("    MONITORAMENTO DE PROTEÇÕES          "));
+  Serial.println(F("       PROTECTION MONITORING            "));
   Serial.println(F("========================================"));
   
-  // Status das proteções
-  Serial.println(F("\nStatus das Proteções:"));
-  Serial.print(F("  Sobretensão:      "));
-  Serial.println(bms.isOverVoltage() ? F("⚠ ATIVO") : F("✓ OK"));
+  // Protection status
+  Serial.println(F("\nProtection Status:"));
+  Serial.print(F("  Overvoltage:      "));
+  Serial.println(bms.isOverVoltage() ? F("⚠ ACTIVE") : F("✓ OK"));
   
-  Serial.print(F("  Subtensão:        "));
-  Serial.println(bms.isUnderVoltage() ? F("⚠ ATIVO") : F("✓ OK"));
+  Serial.print(F("  Undervoltage:     "));
+  Serial.println(bms.isUnderVoltage() ? F("⚠ ACTIVE") : F("✓ OK"));
   
-  Serial.print(F("  Sobrecorrente:    "));
-  Serial.println(bms.isOverCurrent() ? F("⚠ ATIVO") : F("✓ OK"));
+  Serial.print(F("  Overcurrent:      "));
+  Serial.println(bms.isOverCurrent() ? F("⚠ ACTIVE") : F("✓ OK"));
   
-  Serial.print(F("  Sobretemperatura: "));
-  Serial.println(bms.isOverTemperature() ? F("⚠ ATIVO") : F("✓ OK"));
+  Serial.print(F("  Over-temperature: "));
+  Serial.println(bms.isOverTemperature() ? F("⚠ ACTIVE") : F("✓ OK"));
   
-  Serial.print(F("  Subtemperatura:   "));
-  Serial.println(bms.isUnderTemperature() ? F("⚠ ATIVO") : F("✓ OK"));
+  Serial.print(F("  Under-temperature:"));
+  Serial.println(bms.isUnderTemperature() ? F("⚠ ACTIVE") : F("✓ OK"));
   
-  // Valores atuais
-  Serial.println(F("\nValores Atuais:"));
-  Serial.print(F("  Tensão Máx. Célula: "));
+  // Current values
+  Serial.println(F("\nCurrent Values:"));
+  Serial.print(F("  Max Cell Voltage: "));
   Serial.print(bms.getMaxCellVoltage(), 3);
   Serial.println(F(" V"));
   
-  Serial.print(F("  Tensão Mín. Célula: "));
+  Serial.print(F("  Min Cell Voltage: "));
   Serial.print(bms.getMinCellVoltage(), 3);
   Serial.println(F(" V"));
   
-  Serial.print(F("  Corrente:           "));
+  Serial.print(F("  Current:          "));
   Serial.print(bms.getCurrent(), 3);
   Serial.println(F(" A"));
   
-  Serial.print(F("  Temperatura Máx.:   "));
+  Serial.print(F("  Max Temperature:  "));
   Serial.print(bms.getMaxTemperature(), 1);
   Serial.println(F(" °C"));
   
@@ -217,18 +217,18 @@ void displayMonitoring() {
 }
 
 void showProtectionDetails() {
-  Serial.println(F("\nDetalhes da Proteção:"));
+  Serial.println(F("\nProtection Details:"));
   Serial.println(F("----------------------------------------"));
   
   for (uint8_t i = 0; i < NUM_CELLS; i++) {
-    Serial.print(F("Célula "));
+    Serial.print(F("Cell "));
     Serial.print(i + 1);
     Serial.print(F(": "));
     Serial.print(bms.getCellVoltage(i), 3);
     Serial.println(F(" V"));
   }
   
-  Serial.print(F("Corrente: "));
+  Serial.print(F("Current: "));
   Serial.print(bms.getCurrent(), 3);
   Serial.println(F(" A"));
   

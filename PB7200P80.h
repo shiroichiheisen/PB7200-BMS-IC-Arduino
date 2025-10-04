@@ -1,21 +1,21 @@
 /**
  * @file PB7200P80.h
- * @brief Biblioteca Arduino para o AFE PB7200P80
- * @author Biblioteca PB7200P80
+ * @brief Arduino Library for PB7200P80 AFE
+ * @author PB7200P80 Library
  * @version 1.0.0
  * @date 2025-10-04
  * 
- * Esta biblioteca fornece interface completa para comunicação e controle
- * do chip PB7200P80, um AFE (Analog Front End) para sistemas BMS.
+ * This library provides complete interface for communication and control
+ * of the PB7200P80 chip, an AFE (Analog Front End) for BMS systems.
  * 
- * Características principais:
- * - Suporte para até 20 células em série
- * - Leitura de tensão individual de células
- * - Monitoramento de temperatura (até 8 sensores)
- * - Medição de corrente com sensor Hall ou shunt
- * - Proteções configuráveis (sobrecarga, subcarga, sobrecorrente, etc.)
- * - Balanceamento de células
- * - Comunicação I2C ou UART
+ * Main features:
+ * - Support for up to 20 cells in series
+ * - Individual cell voltage reading
+ * - Temperature monitoring (up to 8 sensors)
+ * - Current measurement with Hall sensor or shunt
+ * - Configurable protections (overvoltage, undervoltage, overcurrent, etc.)
+ * - Cell balancing
+ * - I2C or UART communication
  */
 
 #ifndef PB7200P80_H
@@ -24,13 +24,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-// Versão da biblioteca
+// Library version
 #define PB7200P80_VERSION "1.0.0"
 
-// Endereço I2C padrão
+// Default I2C address
 #define PB7200P80_I2C_ADDR 0x55
 
-// Registradores principais (baseado em AFE típico)
+// Main registers (based on typical AFE)
 #define PB7200_REG_DEVICE_ID        0x00
 #define PB7200_REG_STATUS           0x01
 #define PB7200_REG_FAULT_STATUS     0x02
@@ -50,388 +50,388 @@
 #define PB7200_REG_ADC_CTRL         0x71
 #define PB7200_REG_SHUTDOWN         0x72
 
-// Constantes
+// Constants
 #define PB7200_MAX_CELLS 20
 #define PB7200_MAX_TEMPS 8
-#define PB7200_VOLTAGE_LSB 0.001  // 1mV por bit
-#define PB7200_CURRENT_LSB 0.01   // 10mA por bit
-#define PB7200_TEMP_LSB 0.1       // 0.1°C por bit
+#define PB7200_VOLTAGE_LSB 0.001  // 1mV per bit
+#define PB7200_CURRENT_LSB 0.01   // 10mA per bit
+#define PB7200_TEMP_LSB 0.1       // 0.1°C per bit
 
 // Status bits
-#define PB7200_STATUS_OVP    (1 << 0)  // Sobretensão
-#define PB7200_STATUS_UVP    (1 << 1)  // Subtensão
-#define PB7200_STATUS_OCP    (1 << 2)  // Sobrecorrente
-#define PB7200_STATUS_OTP    (1 << 3)  // Sobretemperatura
-#define PB7200_STATUS_UTP    (1 << 4)  // Subtemperatura
-#define PB7200_STATUS_BALANCING (1 << 5)  // Balanceamento ativo
-#define PB7200_STATUS_CHARGING  (1 << 6)  // Carregando
-#define PB7200_STATUS_READY     (1 << 7)  // Pronto
+#define PB7200_STATUS_OVP    (1 << 0)  // Overvoltage
+#define PB7200_STATUS_UVP    (1 << 1)  // Undervoltage
+#define PB7200_STATUS_OCP    (1 << 2)  // Overcurrent
+#define PB7200_STATUS_OTP    (1 << 3)  // Overtemperature
+#define PB7200_STATUS_UTP    (1 << 4)  // Undertemperature
+#define PB7200_STATUS_BALANCING (1 << 5)  // Balancing active
+#define PB7200_STATUS_CHARGING  (1 << 6)  // Charging
+#define PB7200_STATUS_READY     (1 << 7)  // Ready
 
-// Modos de operação
+// Operation modes
 enum PB7200_Mode {
     PB7200_MODE_NORMAL = 0,
     PB7200_MODE_SLEEP = 1,
     PB7200_MODE_SHUTDOWN = 2
 };
 
-// Interface de comunicação
+// Communication interface
 enum PB7200_Interface {
     PB7200_INTERFACE_I2C = 0,
     PB7200_INTERFACE_UART = 1
 };
 
 /**
- * @brief Estrutura para armazenar dados de uma célula
+ * @brief Structure to store cell data
  */
 struct CellData {
-    float voltage;      // Tensão em volts
-    bool balancing;     // Se está sendo balanceada
-    bool overvoltage;   // Sobretensão detectada
-    bool undervoltage;  // Subtensão detectada
+    float voltage;      // Voltage in volts
+    bool balancing;     // If being balanced
+    bool overvoltage;   // Overvoltage detected
+    bool undervoltage;  // Undervoltage detected
 };
 
 /**
- * @brief Estrutura para armazenar configurações de proteção
+ * @brief Structure to store protection configuration
  */
 struct ProtectionConfig {
-    float overVoltageThreshold;     // Limite de sobretensão (V)
-    float underVoltageThreshold;    // Limite de subtensão (V)
-    float overCurrentThreshold;     // Limite de sobrecorrente (A)
-    float overTempThreshold;        // Limite de sobretemperatura (°C)
-    float underTempThreshold;       // Limite de subtemperatura (°C)
-    uint16_t overVoltageDelay;      // Atraso de sobretensão (ms)
-    uint16_t underVoltageDelay;     // Atraso de subtensão (ms)
-    uint16_t overCurrentDelay;      // Atraso de sobrecorrente (ms)
+    float overVoltageThreshold;     // Overvoltage threshold (V)
+    float underVoltageThreshold;    // Undervoltage threshold (V)
+    float overCurrentThreshold;     // Overcurrent threshold (A)
+    float overTempThreshold;        // Overtemperature threshold (°C)
+    float underTempThreshold;       // Undertemperature threshold (°C)
+    uint16_t overVoltageDelay;      // Overvoltage delay (ms)
+    uint16_t underVoltageDelay;     // Undervoltage delay (ms)
+    uint16_t overCurrentDelay;      // Overcurrent delay (ms)
 };
 
 /**
- * @brief Estrutura para estatísticas do pack
+ * @brief Structure for pack statistics
  */
 struct PackStats {
-    float totalVoltage;      // Tensão total do pack
-    float maxCellVoltage;    // Maior tensão de célula
-    float minCellVoltage;    // Menor tensão de célula
-    float avgCellVoltage;    // Tensão média das células
-    float voltageDelta;      // Diferença max-min
-    uint8_t maxCellIndex;    // Índice da célula com maior tensão
-    uint8_t minCellIndex;    // Índice da célula com menor tensão
-    float current;           // Corrente (A)
-    float power;             // Potência (W)
-    float maxTemp;           // Temperatura máxima
-    float minTemp;           // Temperatura mínima
-    uint8_t maxTempIndex;    // Índice do sensor com maior temperatura
-    uint8_t minTempIndex;    // Índice do sensor com menor temperatura
+    float totalVoltage;      // Total pack voltage
+    float maxCellVoltage;    // Maximum cell voltage
+    float minCellVoltage;    // Minimum cell voltage
+    float avgCellVoltage;    // Average cell voltage
+    float voltageDelta;      // Max-min difference
+    uint8_t maxCellIndex;    // Index of cell with highest voltage
+    uint8_t minCellIndex;    // Index of cell with lowest voltage
+    float current;           // Current (A)
+    float power;             // Power (W)
+    float maxTemp;           // Maximum temperature
+    float minTemp;           // Minimum temperature
+    uint8_t maxTempIndex;    // Index of sensor with highest temperature
+    uint8_t minTempIndex;    // Index of sensor with lowest temperature
 };
 
 /**
- * @brief Classe principal da biblioteca PB7200P80
+ * @brief Main class of PB7200P80 library
  */
 class PB7200P80 {
 public:
     /**
-     * @brief Construtor da classe
-     * @param interface Interface de comunicação (I2C ou UART)
-     * @param address Endereço I2C (padrão: 0x55) ou pino RX para UART
-     * @param wire Ponteiro para objeto Wire (apenas para I2C)
+     * @brief Class constructor
+     * @param interface Communication interface (I2C or UART)
+     * @param address I2C address (default: 0x55) or RX pin for UART
+     * @param wire Pointer to Wire object (I2C only)
      */
     PB7200P80(PB7200_Interface interface = PB7200_INTERFACE_I2C, 
               uint8_t address = PB7200P80_I2C_ADDR,
               TwoWire *wire = &Wire);
 
     /**
-     * @brief Inicializa a comunicação com o PB7200P80
-     * @param cellCount Número de células conectadas (1-20)
-     * @return true se inicializado com sucesso
+     * @brief Initialize communication with PB7200P80
+     * @param cellCount Number of connected cells (1-20)
+     * @return true if successfully initialized
      */
     bool begin(uint8_t cellCount = 4);
 
     /**
-     * @brief Verifica se o dispositivo está respondendo
-     * @return true se o dispositivo está conectado
+     * @brief Check if device is responding
+     * @return true if device is connected
      */
     bool isConnected();
 
     /**
-     * @brief Lê o ID do dispositivo
-     * @return ID do dispositivo
+     * @brief Read device ID
+     * @return Device ID
      */
     uint8_t getDeviceID();
 
-    // ========== Leitura de Tensões ==========
+    // ========== Voltage Reading ==========
     
     /**
-     * @brief Lê a tensão de uma célula específica
-     * @param cellIndex Índice da célula (0-19)
-     * @return Tensão em volts (0.0 se erro)
+     * @brief Read voltage of a specific cell
+     * @param cellIndex Cell index (0-19)
+     * @return Voltage in volts (0.0 if error)
      */
     float getCellVoltage(uint8_t cellIndex);
 
     /**
-     * @brief Lê todas as tensões das células
-     * @param voltages Array para armazenar as tensões
-     * @param count Número de células a ler
-     * @return true se sucesso
+     * @brief Read all cell voltages
+     * @param voltages Array to store voltages
+     * @param count Number of cells to read
+     * @return true if successful
      */
     bool getAllCellVoltages(float *voltages, uint8_t count);
 
     /**
-     * @brief Lê dados completos de uma célula
-     * @param cellIndex Índice da célula
-     * @param data Estrutura para armazenar os dados
-     * @return true se sucesso
+     * @brief Read complete cell data
+     * @param cellIndex Cell index
+     * @param data Structure to store data
+     * @return true if successful
      */
     bool getCellData(uint8_t cellIndex, CellData &data);
 
     /**
-     * @brief Obtém a tensão total do pack
-     * @return Tensão total em volts
+     * @brief Get total pack voltage
+     * @return Total voltage in volts
      */
     float getTotalVoltage();
 
     /**
-     * @brief Obtém a maior tensão entre as células
-     * @return Maior tensão em volts
+     * @brief Get maximum cell voltage
+     * @return Maximum voltage in volts
      */
     float getMaxCellVoltage();
 
     /**
-     * @brief Obtém a menor tensão entre as células
-     * @return Menor tensão em volts
+     * @brief Get minimum cell voltage
+     * @return Minimum voltage in volts
      */
     float getMinCellVoltage();
 
     /**
-     * @brief Obtém a diferença entre maior e menor tensão
-     * @return Diferença de tensão em volts
+     * @brief Get difference between max and min voltage
+     * @return Voltage difference in volts
      */
     float getVoltageDelta();
 
-    // ========== Leitura de Temperatura ==========
+    // ========== Temperature Reading ==========
     
     /**
-     * @brief Lê a temperatura de um sensor específico
-     * @param tempIndex Índice do sensor (0-7)
-     * @return Temperatura em °C
+     * @brief Read temperature from specific sensor
+     * @param tempIndex Sensor index (0-7)
+     * @return Temperature in °C
      */
     float getTemperature(uint8_t tempIndex);
 
     /**
-     * @brief Lê todas as temperaturas
-     * @param temperatures Array para armazenar as temperaturas
-     * @param count Número de sensores a ler
-     * @return true se sucesso
+     * @brief Read all temperatures
+     * @param temperatures Array to store temperatures
+     * @param count Number of sensors to read
+     * @return true if successful
      */
     bool getAllTemperatures(float *temperatures, uint8_t count);
 
     /**
-     * @brief Obtém a temperatura máxima
-     * @return Temperatura máxima em °C
+     * @brief Get maximum temperature
+     * @return Maximum temperature in °C
      */
     float getMaxTemperature();
 
     /**
-     * @brief Obtém a temperatura mínima
-     * @return Temperatura mínima em °C
+     * @brief Get minimum temperature
+     * @return Minimum temperature in °C
      */
     float getMinTemperature();
 
-    // ========== Leitura de Corrente ==========
+    // ========== Current Reading ==========
     
     /**
-     * @brief Lê a corrente do pack
-     * @return Corrente em amperes (positivo = carga, negativo = descarga)
+     * @brief Read pack current
+     * @return Current in amperes (positive = charging, negative = discharging)
      */
     float getCurrent();
 
     /**
-     * @brief Lê a potência do pack
-     * @return Potência em watts
+     * @brief Read pack power
+     * @return Power in watts
      */
     float getPower();
 
-    // ========== Status e Proteções ==========
+    // ========== Status and Protections ==========
     
     /**
-     * @brief Lê o registro de status
-     * @return Byte de status
+     * @brief Read status register
+     * @return Status byte
      */
     uint8_t getStatus();
 
     /**
-     * @brief Lê o registro de falhas
-     * @return Byte de falhas
+     * @brief Read fault register
+     * @return Fault byte
      */
     uint8_t getFaultStatus();
 
     /**
-     * @brief Verifica se há sobretensão
-     * @return true se sobretensão detectada
+     * @brief Check for overvoltage
+     * @return true if overvoltage detected
      */
     bool isOverVoltage();
 
     /**
-     * @brief Verifica se há subtensão
-     * @return true se subtensão detectada
+     * @brief Check for undervoltage
+     * @return true if undervoltage detected
      */
     bool isUnderVoltage();
 
     /**
-     * @brief Verifica se há sobrecorrente
-     * @return true se sobrecorrente detectada
+     * @brief Check for overcurrent
+     * @return true if overcurrent detected
      */
     bool isOverCurrent();
 
     /**
-     * @brief Verifica se há sobretemperatura
-     * @return true se sobretemperatura detectada
+     * @brief Check for overtemperature
+     * @return true if overtemperature detected
      */
     bool isOverTemperature();
 
     /**
-     * @brief Verifica se há subtemperatura
-     * @return true se subtemperatura detectada
+     * @brief Check for undertemperature
+     * @return true if undertemperature detected
      */
     bool isUnderTemperature();
 
     /**
-     * @brief Limpa flags de falha
-     * @return true se sucesso
+     * @brief Clear fault flags
+     * @return true if successful
      */
     bool clearFaults();
 
-    // ========== Balanceamento ==========
+    // ========== Cell Balancing ==========
     
     /**
-     * @brief Habilita balanceamento de uma célula
-     * @param cellIndex Índice da célula (0-19)
-     * @param enable true para habilitar, false para desabilitar
-     * @return true se sucesso
+     * @brief Enable cell balancing
+     * @param cellIndex Cell index (0-19)
+     * @param enable true to enable, false to disable
+     * @return true if successful
      */
     bool setBalancing(uint8_t cellIndex, bool enable);
 
     /**
-     * @brief Habilita balanceamento automático
-     * @param enable true para habilitar
-     * @param threshold Diferença de tensão para iniciar balanceamento (mV)
-     * @return true se sucesso
+     * @brief Enable automatic balancing
+     * @param enable true to enable
+     * @param threshold Voltage difference to start balancing (mV)
+     * @return true if successful
      */
     bool setAutoBalancing(bool enable, uint16_t threshold = 50);
 
     /**
-     * @brief Verifica se uma célula está sendo balanceada
-     * @param cellIndex Índice da célula
-     * @return true se está balanceando
+     * @brief Check if a cell is being balanced
+     * @param cellIndex Cell index
+     * @return true if balancing
      */
     bool isBalancing(uint8_t cellIndex);
 
     /**
-     * @brief Desabilita balanceamento de todas as células
-     * @return true se sucesso
+     * @brief Disable balancing for all cells
+     * @return true if successful
      */
     bool stopAllBalancing();
 
-    // ========== Configuração ==========
+    // ========== Configuration ==========
     
     /**
-     * @brief Configura proteções
-     * @param config Estrutura com configurações de proteção
-     * @return true se sucesso
+     * @brief Configure protections
+     * @param config Structure with protection settings
+     * @return true if successful
      */
     bool setProtectionConfig(const ProtectionConfig &config);
 
     /**
-     * @brief Lê configurações de proteção
-     * @param config Estrutura para armazenar configurações
-     * @return true se sucesso
+     * @brief Read protection configuration
+     * @param config Structure to store settings
+     * @return true if successful
      */
     bool getProtectionConfig(ProtectionConfig &config);
 
     /**
-     * @brief Define o modo de operação
-     * @param mode Modo de operação
-     * @return true se sucesso
+     * @brief Set operation mode
+     * @param mode Operation mode
+     * @return true if successful
      */
     bool setMode(PB7200_Mode mode);
 
     /**
-     * @brief Reinicia o dispositivo
-     * @return true se sucesso
+     * @brief Reset device
+     * @return true if successful
      */
     bool reset();
 
     /**
-     * @brief Entra em modo sleep
-     * @return true se sucesso
+     * @brief Enter sleep mode
+     * @return true if successful
      */
     bool sleep();
 
     /**
-     * @brief Acorda do modo sleep
-     * @return true se sucesso
+     * @brief Wake up from sleep mode
+     * @return true if successful
      */
     bool wakeup();
 
     /**
-     * @brief Desliga o dispositivo
-     * @return true se sucesso
+     * @brief Shutdown device
+     * @return true if successful
      */
     bool shutdown();
 
-    // ========== Estatísticas ==========
+    // ========== Statistics ==========
     
     /**
-     * @brief Obtém estatísticas completas do pack
-     * @param stats Estrutura para armazenar estatísticas
-     * @return true se sucesso
+     * @brief Get complete pack statistics
+     * @param stats Structure to store statistics
+     * @return true if successful
      */
     bool getPackStats(PackStats &stats);
 
     /**
-     * @brief Atualiza todas as leituras (otimizado)
-     * @return true se sucesso
+     * @brief Update all readings (optimized)
+     * @return true if successful
      */
     bool update();
 
-    // ========== Diagnóstico ==========
+    // ========== Diagnostics ==========
     
     /**
-     * @brief Executa autoteste
-     * @return true se passou no teste
+     * @brief Run self-test
+     * @return true if passed
      */
     bool selfTest();
 
     /**
-     * @brief Imprime informações de diagnóstico
+     * @brief Print diagnostic information
      */
     void printDiagnostics();
 
     /**
-     * @brief Imprime todas as tensões das células
+     * @brief Print all cell voltages
      */
     void printCellVoltages();
 
     /**
-     * @brief Imprime todas as temperaturas
+     * @brief Print all temperatures
      */
     void printTemperatures();
 
     /**
-     * @brief Imprime status completo
+     * @brief Print complete status
      */
     void printStatus();
 
 private:
-    // Configuração de hardware
+    // Hardware configuration
     PB7200_Interface _interface;
     uint8_t _i2cAddress;
     TwoWire *_wire;
     HardwareSerial *_serial;
     
-    // Configuração do pack
+    // Pack configuration
     uint8_t _cellCount;
     uint8_t _tempSensorCount;
     
-    // Cache de dados
+    // Data cache
     float _cellVoltages[PB7200_MAX_CELLS];
     float _temperatures[PB7200_MAX_TEMPS];
     float _current;
@@ -439,13 +439,13 @@ private:
     uint8_t _faultStatus;
     unsigned long _lastUpdate;
     
-    // Métodos privados de comunicação
+    // Private communication methods
     bool writeRegister(uint8_t reg, uint8_t value);
     bool writeRegisters(uint8_t reg, uint8_t *values, uint8_t length);
     bool readRegister(uint8_t reg, uint8_t &value);
     bool readRegisters(uint8_t reg, uint8_t *values, uint8_t length);
     
-    // Métodos auxiliares
+    // Helper methods
     uint16_t voltageToRaw(float voltage);
     float rawToVoltage(uint16_t raw);
     int16_t currentToRaw(float current);
@@ -453,7 +453,7 @@ private:
     int16_t tempToRaw(float temp);
     float rawToTemp(int16_t raw);
     
-    // Validação
+    // Validation
     bool isValidCellIndex(uint8_t index);
     bool isValidTempIndex(uint8_t index);
 };
